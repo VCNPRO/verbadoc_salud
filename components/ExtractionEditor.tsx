@@ -187,7 +187,7 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
                 <div>
                     <h3 className="text-base font-medium mb-2" style={{ color: textColor }}>2. Definición del Esquema JSON</h3>
                     {template && 'secciones' in template ? (
-                        <HealthSchemaViewer template={template} onUpdate={onUpdateTemplate} />
+                        <HealthSchemaViewer template={template} onUpdate={onUpdateTemplate} theme={theme} isHealthMode={isHealthMode} />
                     ) : (
                         <SchemaBuilder schema={schema} setSchema={setSchema} theme={theme} isHealthMode={isHealthMode} />
                     )}
