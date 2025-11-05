@@ -20,17 +20,61 @@ import { getSectorById, getDefaultTheme } from './utils/sectorsConfig.ts';
 // Helper to create a dummy file for the example
 function createExampleFile(): File {
     const exampleContent = `
-FACTURA
-Cliente: Juan Pérez
-Fecha: 2024-07-29
+HISTORIA CLÍNICA
+═══════════════════════════════════════════════════════════════
 
-Artículos:
-- Teclado Mecánico: 120.00
-- Ratón Gaming: 75.50
+DATOS DE FILIACIÓN
+Nombre Completo: María González López
+DNI/ID: 12345678-A
+Fecha de Nacimiento: 15/03/1985 (39 años)
+Género: Femenino
+Dirección: Av. Principal 123, Ciudad Ejemplo
+Teléfono: +34 600 123 456
+Email: maria.gonzalez@email.com
 
-Total: 195.50
+MOTIVO DE CONSULTA
+Dolor abdominal persistente de 3 días de evolución, acompañado de náuseas.
+
+ANTECEDENTES PERSONALES
+- Alergias: Penicilina
+- Enfermedades crónicas: Diabetes Mellitus tipo 2 (diagnosticada en 2018)
+- Cirugías previas: Apendicectomía (2010)
+- Medicación actual: Metformina 850mg cada 12 horas
+
+EXPLORACIÓN FÍSICA
+Tensión Arterial: 125/80 mmHg
+Frecuencia Cardíaca: 78 lpm
+Temperatura: 37.2°C
+Peso: 68 kg
+Altura: 165 cm
+IMC: 24.9
+
+Estado General: Paciente consciente y orientada
+Abdomen: Dolor a la palpación en epigastrio, sin signos de defensa
+
+DIAGNÓSTICO PROVISIONAL
+Gastritis aguda
+
+TRATAMIENTO PRESCRITO
+- Omeprazol 20mg, 1 comprimido cada 24 horas durante 14 días
+- Dieta blanda
+- Evitar irritantes gástricos (café, alcohol, picantes)
+
+OBSERVACIONES
+Se recomienda control en 7 días. Si los síntomas persisten o empeoran,
+acudir a urgencias.
+
+PRÓXIMA CITA
+Fecha: 15/02/2025
+Hora: 10:30
+
+═══════════════════════════════════════════════════════════════
+Médico: Dr. Carlos Ramírez Soto
+Nº Colegiado: 12345
+Firma: [Firma Digital]
+Fecha de emisión: 08/02/2025
 `;
-    return new File([exampleContent], "factura-ejemplo.txt", { type: "text/plain" });
+    return new File([exampleContent], "historia-clinica-ejemplo.txt", { type: "text/plain" });
 }
 
 
@@ -273,7 +317,7 @@ function App() {
                                     color: isHealthMode ? '#047857' : '#f1f5f9'
                                 }}
                             >
-                                verbadoc
+                                verbadoc salud
                             </h1>
                             <p
                                 className="text-sm font-sans transition-colors duration-500"
