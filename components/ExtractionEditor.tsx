@@ -185,39 +185,11 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
                 </div>
 
                 <div>
-                    <label htmlFor="model-select" className="block text-base font-medium mb-2" style={{ color: textColor }}>
-                        2. Modelo de IA
-                    </label>
-                    <select
-                        id="model-select"
-                        value={selectedModel}
-                        onChange={(e) => setSelectedModel(e.target.value as GeminiModel)}
-                        className="w-full rounded-md p-3 focus:ring-2 focus:outline-none transition-all text-sm"
-                        style={{
-                            backgroundColor: isHealthMode ? '#f9fafb' : '#0f172a',
-                            borderWidth: '1px',
-                            borderStyle: 'solid',
-                            borderColor: isHealthMode ? '#d1d5db' : '#475569',
-                            color: textColor
-                        }}
-                    >
-                        {AVAILABLE_MODELS.map(model => (
-                            <option key={model.id} value={model.id}>
-                                {model.name} - {model.bestFor}
-                            </option>
-                        ))}
-                    </select>
-                    <p className="text-xs mt-1" style={{ color: textSecondary }}>
-                        {AVAILABLE_MODELS.find(m => m.id === selectedModel)?.description}
-                    </p>
-                </div>
-
-                <div>
-                    <h3 className="text-base font-medium mb-2" style={{ color: textColor }}>3. Definición del Esquema JSON</h3>
+                    <h3 className="text-base font-medium mb-2" style={{ color: textColor }}>2. Definición del Esquema JSON</h3>
                     {template && 'secciones' in template ? (
                         <HealthSchemaViewer template={template} onUpdate={onUpdateTemplate} />
                     ) : (
-                        <SchemaBuilder schema={schema} setSchema={setSchema} />
+                        <SchemaBuilder schema={schema} setSchema={setSchema} theme={theme} isHealthMode={isHealthMode} />
                     )}
                 </div>
 
@@ -231,7 +203,7 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" style={{ color: accentColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            4. Búsqueda de Imágenes/Logos (Opcional)
+                            3. Búsqueda de Imágenes/Logos (Opcional)
                         </h3>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
