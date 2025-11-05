@@ -317,7 +317,7 @@ function App() {
                                     color: isHealthMode ? '#047857' : '#f1f5f9'
                                 }}
                             >
-                                verbadoc salud
+                                verbadoc
                             </h1>
                             <p
                                 className="text-sm font-sans transition-colors duration-500"
