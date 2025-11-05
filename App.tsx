@@ -42,7 +42,7 @@ function App() {
     const [viewingFile, setViewingFile] = useState<File | null>(null);
     const [apiKeyError, setApiKeyError] = useState<boolean>(false);
     const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
-    const [currentSector, setCurrentSector] = useState<Sector>('general');
+    const [currentSector, setCurrentSector] = useState<Sector>('salud');
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
 
     // State for the editor, which can be reused across different files
