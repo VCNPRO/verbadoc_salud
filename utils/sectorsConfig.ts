@@ -2,40 +2,6 @@ import type { SectorInfo } from '../types.ts';
 
 export const SECTORS: SectorInfo[] = [
     {
-        id: 'general',
-        name: 'General',
-        description: 'Documentos generales y variados',
-        icon: '📄',
-    },
-    {
-        id: 'contabilidad',
-        name: 'Contabilidad',
-        description: 'Facturas, balances, cuentas',
-        icon: '🧾',
-        recommendedModel: 'gemini-2.5-flash',
-    },
-    {
-        id: 'finanzas',
-        name: 'Finanzas',
-        description: 'Estados financieros, reportes',
-        icon: '💰',
-        recommendedModel: 'gemini-2.5-pro',
-    },
-    {
-        id: 'marketing',
-        name: 'Marketing',
-        description: 'Campañas, métricas, reportes',
-        icon: '📊',
-        recommendedModel: 'gemini-2.5-flash',
-    },
-    {
-        id: 'legal',
-        name: 'Legal',
-        description: 'Contratos, documentos legales',
-        icon: '⚖️',
-        recommendedModel: 'gemini-2.5-pro',
-    },
-    {
         id: 'salud',
         name: 'Sector Salud',
         description: 'Documentos médicos, historias clínicas',
@@ -58,6 +24,12 @@ export const SECTORS: SectorInfo[] = [
             'ISO 27701, 27017, 27018',
             'ISO 9001'
         ]
+    },
+    {
+        id: 'general',
+        name: 'General',
+        description: 'Documentos generales y variados',
+        icon: '📄',
     }
 ];
 
