@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FileTextIcon, ReceiptIcon, FileIcon } from './Icons.tsx';
+import { FileTextIcon, ReceiptIcon, FileIcon, SparklesIcon } from './Icons.tsx';
 import type { SchemaField, Sector } from '../types.ts';
 import { SECTORS, getSectorById } from '../utils/sectorsConfig.ts';
 import { SchemaBuilder } from './SchemaBuilder.tsx';
+import { generateSchemaFromPrompt } from '../services/geminiService.ts';
 
 export interface Template {
     id: string;
@@ -96,6 +97,7 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
     const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
     const [newSchema, setNewSchema] = useState<SchemaField[]>([{ id: `field-${Date.now()}`, name: '', type: 'STRING' }]);
     const [newPrompt, setNewPrompt] = useState('Extrae la información clave del siguiente documento según el esquema JSON proporcionado.');
+    const [isGeneratingSchema, setIsGeneratingSchema] = useState(false);
 
     useEffect(() => {
         setSelectedSector(currentSector || 'general');
@@ -150,6 +152,24 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
         // Reset new schema/prompt
         setNewSchema([{ id: `field-${Date.now()}`, name: '', type: 'STRING' }]);
         setNewPrompt('Extrae la información clave del siguiente documento según el esquema JSON proporcionado.');
+    };
+
+    const handleGenerateSchemaFromPrompt = async () => {
+        if (!newPrompt.trim()) {
+            alert('Por favor, escribe primero un prompt describiendo qué datos quieres extraer.');
+            return;
+        }
+
+        setIsGeneratingSchema(true);
+        try {
+            const generatedFields = await generateSchemaFromPrompt(newPrompt);
+            setNewSchema(generatedFields);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            alert(`Error al generar campos: ${errorMessage}`);
+        } finally {
+            setIsGeneratingSchema(false);
+        }
     };
 
     const handleArchiveTemplate = (templateId: string) => {
@@ -479,9 +499,35 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
 
                         {/* Schema Builder */}
                         <div>
-                            <label className="block text-xs font-medium mb-1.5 transition-colors" style={{ color: textColor }}>
-                                Campos del Esquema
-                            </label>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label className="block text-xs font-medium transition-colors" style={{ color: textColor }}>
+                                    Campos del Esquema
+                                </label>
+                                <button
+                                    onClick={handleGenerateSchemaFromPrompt}
+                                    disabled={isGeneratingSchema || !newPrompt.trim()}
+                                    className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#047857' : '#06b6d4',
+                                        color: '#ffffff'
+                                    }}
+                                >
+                                    {isGeneratingSchema ? (
+                                        <>
+                                            <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            ...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <SparklesIcon className="w-3 h-3" />
+                                            Generar desde Prompt
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                             <SchemaBuilder
                                 schema={newSchema}
                                 setSchema={setNewSchema}

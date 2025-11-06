@@ -138,6 +138,73 @@ export const AVAILABLE_MODELS: ModelInfo[] = [
     }
 ];
 
+// Nueva función: Generar campos del schema automáticamente desde el prompt
+export const generateSchemaFromPrompt = async (
+    prompt: string,
+    modelId: GeminiModel = 'gemini-2.5-flash'
+): Promise<SchemaField[]> => {
+    const genAI = getGenAI();
+
+    const analysisPrompt = `Analiza el siguiente prompt de extracción de datos y genera una lista de campos JSON que se necesitan extraer.
+
+Prompt del usuario:
+"${prompt}"
+
+INSTRUCCIONES:
+1. Identifica TODOS los datos que el usuario quiere extraer
+2. Para cada dato, crea un campo con:
+   - name: nombre del campo en snake_case (sin espacios, sin tildes, ej: "nombre_paciente")
+   - type: uno de estos tipos: STRING, NUMBER, BOOLEAN, ARRAY_OF_STRINGS, ARRAY_OF_OBJECTS
+3. Si menciona una lista o varios elementos del mismo tipo, usa ARRAY_OF_STRINGS
+4. Si menciona objetos complejos con sub-campos, usa ARRAY_OF_OBJECTS
+
+TIPOS:
+- STRING: Para texto, nombres, descripciones, fechas
+- NUMBER: Para números, cantidades, precios
+- BOOLEAN: Para sí/no, verdadero/falso
+- ARRAY_OF_STRINGS: Para listas simples
+- ARRAY_OF_OBJECTS: Para listas con estructura (ej: lista de productos con nombre y precio)
+
+Responde SOLO con un JSON con este formato:
+{
+  "fields": [
+    {
+      "name": "nombre_campo",
+      "type": "STRING"
+    },
+    ...
+  ]
+}`;
+
+    try {
+        const response: GenerateContentResponse = await genAI.models.generateContent({
+            model: modelId,
+            contents: { parts: [{ text: analysisPrompt }] },
+            config: {
+                responseMimeType: "application/json",
+            },
+        });
+
+        const jsonStr = response.text.trim();
+        const result = JSON.parse(jsonStr);
+
+        // Convert to SchemaField format with IDs
+        const fields: SchemaField[] = result.fields.map((field: any, index: number) => ({
+            id: `field-${Date.now()}-${index}`,
+            name: field.name,
+            type: field.type,
+            children: field.type === 'ARRAY_OF_OBJECTS' ? [
+                { id: `field-${Date.now()}-${index}-0`, name: '', type: 'STRING' }
+            ] : undefined
+        }));
+
+        return fields;
+    } catch (error) {
+        console.error("Error al generar schema desde prompt:", error);
+        throw new Error("No se pudo generar el schema automáticamente. Intenta definir los campos manualmente.");
+    }
+};
+
 export const extractDataFromDocument = async (
     file: File,
     schema: SchemaField[],
