@@ -288,82 +288,6 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                 <p className="text-xs mt-1 transition-colors duration-500" style={{ color: textSecondary }}>Modelos y plantillas predefinidas</p>
             </div>
 
-            {/* Selector de Sectores */}
-            <div
-                className="p-4 border-b transition-colors duration-500"
-                style={{
-                    backgroundColor: isHealthMode ? '#f0fdf4' : 'rgba(15, 23, 42, 0.5)',
-                    borderBottomColor: borderColor
-                }}
-            >
-                <label
-                    htmlFor="sector-select"
-                    className="block text-sm font-medium mb-2 transition-colors duration-500"
-                    style={{ color: textColor }}
-                >
-                    Filtrar por Sector
-                </label>
-                <select
-                    id="sector-select"
-                    value={selectedSector}
-                    onChange={(e) => handleSectorChange(e.target.value as Sector)}
-                    className="w-full rounded-md p-2 text-sm transition-colors duration-500"
-                    style={{
-                        backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
-                        borderColor: borderColor,
-                        color: textColor,
-                        border: `1px solid ${borderColor}`
-                    }}
-                >
-                    {SECTORS.map(sector => (
-                        <option key={sector.id} value={sector.id}>
-                            {sector.icon} {sector.name}
-                        </option>
-                    ))}
-                </select>
-                {currentSectorInfo?.description && (
-                    <p className="text-xs mt-1 transition-colors duration-500" style={{ color: textSecondary }}>
-                        {currentSectorInfo.description}
-                    </p>
-                )}
-
-                {/* Mostrar info de certificaciones para sector Salud */}
-                {selectedSector === 'salud' && currentSectorInfo?.certifications && (
-                    <button
-                        onClick={() => setShowCertificationsModal(true)}
-                        className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 hover:opacity-90 border-2 rounded-md transition-all text-xs font-semibold"
-                        style={{
-                            backgroundColor: '#d1fae5',
-                            borderColor: '#6ee7b7',
-                            color: '#047857'
-                        }}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                        Ver Certificaciones HIPAA
-                    </button>
-                )}
-
-                {/* Modelo recomendado */}
-                {currentSectorInfo?.recommendedModel && (
-                    <div
-                        className="mt-3 p-2 border rounded text-xs transition-colors duration-500"
-                        style={{
-                            backgroundColor: isHealthMode ? '#dbeafe' : 'rgba(37, 99, 235, 0.1)',
-                            borderColor: isHealthMode ? '#93c5fd' : 'rgba(59, 130, 246, 0.3)'
-                        }}
-                    >
-                        <p className="font-medium transition-colors duration-500" style={{ color: isHealthMode ? '#1e40af' : '#93c5fd' }}>
-                            Modelo recomendado:
-                        </p>
-                        <p className="mt-0.5 transition-colors duration-500" style={{ color: isHealthMode ? '#1e3a8a' : '#bfdbfe' }}>
-                            {currentSectorInfo.recommendedModel === 'gemini-2.5-pro' ? 'Gemini 2.5 Pro' : 'Gemini 2.5 Flash'}
-                        </p>
-                    </div>
-                )}
-            </div>
-
             <div
                 className="flex-1 overflow-y-auto p-4 space-y-6"
                 style={{
@@ -611,6 +535,84 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                     )}
                 </div>
                     </>
+                )}
+
+                {/* Selector de Sectores, Certificaciones y Modelo - Al final */}
+                {!isCreatingTemplate && (
+                    <div
+                        className="p-4 border-t transition-colors duration-500"
+                        style={{
+                            backgroundColor: isHealthMode ? '#f0fdf4' : 'rgba(15, 23, 42, 0.5)',
+                            borderTopColor: borderColor
+                        }}
+                    >
+                        <label
+                            htmlFor="sector-select"
+                            className="block text-sm font-medium mb-2 transition-colors duration-500"
+                            style={{ color: textColor }}
+                        >
+                            Filtrar por Sector
+                        </label>
+                        <select
+                            id="sector-select"
+                            value={selectedSector}
+                            onChange={(e) => handleSectorChange(e.target.value as Sector)}
+                            className="w-full rounded-md p-2 text-sm transition-colors duration-500"
+                            style={{
+                                backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                borderColor: borderColor,
+                                color: textColor,
+                                border: `1px solid ${borderColor}`
+                            }}
+                        >
+                            {SECTORS.map(sector => (
+                                <option key={sector.id} value={sector.id}>
+                                    {sector.icon} {sector.name}
+                                </option>
+                            ))}
+                        </select>
+                        {currentSectorInfo?.description && (
+                            <p className="text-xs mt-1 transition-colors duration-500" style={{ color: textSecondary }}>
+                                {currentSectorInfo.description}
+                            </p>
+                        )}
+
+                        {/* Mostrar info de certificaciones para sector Salud */}
+                        {selectedSector === 'salud' && currentSectorInfo?.certifications && (
+                            <button
+                                onClick={() => setShowCertificationsModal(true)}
+                                className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 hover:opacity-90 border-2 rounded-md transition-all text-xs font-semibold"
+                                style={{
+                                    backgroundColor: '#d1fae5',
+                                    borderColor: '#6ee7b7',
+                                    color: '#047857'
+                                }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                Ver Certificaciones HIPAA
+                            </button>
+                        )}
+
+                        {/* Modelo recomendado */}
+                        {currentSectorInfo?.recommendedModel && (
+                            <div
+                                className="mt-3 p-2 border rounded text-xs transition-colors duration-500"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#dbeafe' : 'rgba(37, 99, 235, 0.1)',
+                                    borderColor: isHealthMode ? '#93c5fd' : 'rgba(59, 130, 246, 0.3)'
+                                }}
+                            >
+                                <p className="font-medium transition-colors duration-500" style={{ color: isHealthMode ? '#1e40af' : '#93c5fd' }}>
+                                    Modelo recomendado:
+                                </p>
+                                <p className="mt-0.5 transition-colors duration-500" style={{ color: isHealthMode ? '#1e3a8a' : '#bfdbfe' }}>
+                                    {currentSectorInfo.recommendedModel === 'gemini-2.5-pro' ? 'Gemini 2.5 Pro' : 'Gemini 2.5 Flash'}
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
 
