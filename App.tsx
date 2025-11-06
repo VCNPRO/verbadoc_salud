@@ -13,6 +13,8 @@ import { PdfViewer } from './components/PdfViewer.tsx';
 // Fix: Use explicit file extension in import.
 import { HelpModal } from './components/HelpModal.tsx';
 // Fix: Use explicit file extension in import.
+import { ResultsViewer } from './components/ResultsViewer.tsx';
+// Fix: Use explicit file extension in import.
 import type { UploadedFile, ExtractionResult, SchemaField, Sector } from './types.ts';
 import { setApiKey } from './services/geminiService.ts';
 import { getSectorById, getDefaultTheme } from './utils/sectorsConfig.ts';
@@ -88,6 +90,7 @@ function App() {
     const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
     const [currentSector, setCurrentSector] = useState<Sector>('salud');
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+    const [showingResults, setShowingResults] = useState<boolean>(false);
 
     // State for the editor, which can be reused across different files
     const [prompt, setPrompt] = useState<string>('Extrae la información clave del siguiente documento según el esquema JSON proporcionado.');
@@ -150,6 +153,7 @@ function App() {
                 timestamp: new Date().toISOString(),
             };
             setHistory(currentHistory => [newHistoryEntry, ...currentHistory]);
+            setShowingResults(true); // Mostrar resultados automáticamente
 
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Un error desconocido ocurrió.';
@@ -202,6 +206,7 @@ function App() {
         }
 
         setIsLoading(false);
+        setShowingResults(true); // Mostrar resultados automáticamente
     };
 
     const handleUseExampleFile = () => {
@@ -376,17 +381,6 @@ function App() {
 
             <main className="p-4 sm:p-6 lg:p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6" style={{height: 'calc(100vh - 112px)'}}>
-                    <div className="lg:col-span-2 h-full">
-                        <TemplatesPanel
-                            onSelectTemplate={handleSelectTemplate}
-                            currentSchema={schema}
-                            currentPrompt={prompt}
-                            onSectorChange={handleSectorChange}
-                            currentSector={currentSector}
-                            theme={currentTheme}
-                            isHealthMode={isHealthMode}
-                        />
-                    </div>
                     <div className="lg:col-span-3 h-full">
                          <FileUploader
                             files={files}
@@ -401,7 +395,7 @@ function App() {
                             isHealthMode={isHealthMode}
                         />
                     </div>
-                    <div className="lg:col-span-5 h-full">
+                    <div className="lg:col-span-6 h-full">
                         <ExtractionEditor
                             file={activeFile}
                             template={selectedTemplate}
@@ -416,13 +410,65 @@ function App() {
                             isHealthMode={isHealthMode}
                         />
                     </div>
-                    <div className="lg:col-span-2 h-full">
-                        <HistoryViewer
-                            history={history}
-                            onReplay={handleReplay}
-                            theme={currentTheme}
-                            isHealthMode={isHealthMode}
-                        />
+                    <div className="lg:col-span-3 h-full">
+                        {showingResults && history.length > 0 ? (
+                            <div className="h-full flex flex-col">
+                                {/* Botón para volver a plantillas */}
+                                <button
+                                    onClick={() => setShowingResults(false)}
+                                    className="mb-2 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 hover:opacity-90"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#d1fae5' : 'rgba(100, 116, 139, 0.5)',
+                                        color: isHealthMode ? '#047857' : '#f1f5f9',
+                                        borderWidth: '1px',
+                                        borderStyle: 'solid',
+                                        borderColor: isHealthMode ? '#6ee7b7' : 'rgba(71, 85, 105, 0.5)'
+                                    }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                    Ver Plantillas
+                                </button>
+                                <div className="flex-1">
+                                    <ResultsViewer
+                                        results={history}
+                                        theme={currentTheme}
+                                        isHealthMode={isHealthMode}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="h-full flex flex-col">
+                                {/* Botón para ver resultados si hay history */}
+                                {history.length > 0 && (
+                                    <button
+                                        onClick={() => setShowingResults(true)}
+                                        className="mb-2 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 hover:opacity-90"
+                                        style={{
+                                            backgroundColor: isHealthMode ? '#047857' : '#06b6d4',
+                                            color: '#ffffff'
+                                        }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Ver Resultados ({history.length})
+                                    </button>
+                                )}
+                                <div className="flex-1">
+                                    <TemplatesPanel
+                                        onSelectTemplate={handleSelectTemplate}
+                                        currentSchema={schema}
+                                        currentPrompt={prompt}
+                                        onSectorChange={handleSectorChange}
+                                        currentSector={currentSector}
+                                        theme={currentTheme}
+                                        isHealthMode={isHealthMode}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>

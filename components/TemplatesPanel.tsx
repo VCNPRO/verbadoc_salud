@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileTextIcon, ReceiptIcon, FileIcon } from './Icons.tsx';
 import type { SchemaField, Sector } from '../types.ts';
 import { SECTORS, getSectorById } from '../utils/sectorsConfig.ts';
+import { SchemaBuilder } from './SchemaBuilder.tsx';
 
 export interface Template {
     id: string;
@@ -92,6 +93,9 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
     const [showArchived, setShowArchived] = useState(false);
     const [selectedSector, setSelectedSector] = useState<Sector>(currentSector || 'general');
     const [showCertificationsModal, setShowCertificationsModal] = useState(false);
+    const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
+    const [newSchema, setNewSchema] = useState<SchemaField[]>([{ id: `field-${Date.now()}`, name: '', type: 'STRING' }]);
+    const [newPrompt, setNewPrompt] = useState('Extrae la información clave del siguiente documento según el esquema JSON proporcionado.');
 
     useEffect(() => {
         setSelectedSector(currentSector || 'general');
@@ -115,7 +119,13 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
     };
 
     const handleSaveTemplate = () => {
-        if (!newTemplateName.trim() || !currentSchema || !currentPrompt) return;
+        if (!newTemplateName.trim()) return;
+
+        // Usar newSchema/newPrompt si estamos creando, sino usar current
+        const schemaToSave = isCreatingTemplate ? newSchema : (currentSchema || []);
+        const promptToSave = isCreatingTemplate ? newPrompt : (currentPrompt || '');
+
+        if (schemaToSave.length === 0) return;
 
         const newTemplate: any = {
             id: `custom-${Date.now()}`,
@@ -123,8 +133,8 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
             description: newTemplateDescription.trim() || 'Plantilla personalizada',
             type: 'modelo',
             icon: 'file',
-            schema: JSON.parse(JSON.stringify(currentSchema)),
-            prompt: currentPrompt,
+            schema: JSON.parse(JSON.stringify(schemaToSave)),
+            prompt: promptToSave,
             custom: true,
             archived: false
         };
@@ -136,6 +146,10 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
         setNewTemplateName('');
         setNewTemplateDescription('');
         setShowSaveDialog(false);
+        setIsCreatingTemplate(false);
+        // Reset new schema/prompt
+        setNewSchema([{ id: `field-${Date.now()}`, name: '', type: 'STRING' }]);
+        setNewPrompt('Extrae la información clave del siguiente documento según el esquema JSON proporcionado.');
     };
 
     const handleArchiveTemplate = (templateId: string) => {
@@ -357,45 +371,158 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                 }}
             >
                 {/* Botón para crear nueva plantilla */}
-                <button
-                    onClick={() => setShowSaveDialog(true)}
-                    className="w-full p-4 border-2 border-dashed rounded-lg transition-all flex items-center justify-center gap-3 font-bold hover:opacity-90 shadow-md hover:shadow-lg"
-                    style={{
-                        backgroundColor: isHealthMode ? '#d1fae5' : 'rgba(6, 182, 212, 0.2)',
-                        borderColor: isHealthMode ? '#6ee7b7' : 'rgba(34, 211, 238, 0.5)',
-                        color: isHealthMode ? '#047857' : '#22d3ee'
-                    }}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span>Crear Nueva Plantilla</span>
-                </button>
-
-                {/* Plantillas del sector seleccionado */}
-                {filteredTemplates.length > 0 ? (
-                    <div>
-                        <h3
-                            className="text-sm font-bold mb-3 flex items-center gap-2 transition-colors duration-500"
-                            style={{ color: textColor }}
-                        >
-                            <span className="text-lg">{currentSectorInfo?.icon}</span>
-                            Plantillas de {currentSectorInfo?.name}
-                        </h3>
-                        <div className="space-y-2">
-                            {filteredTemplates.map(template => (
-                                <TemplateCard key={template.id} template={template} />
-                            ))}
-                        </div>
-                    </div>
+                {!isCreatingTemplate ? (
+                    <button
+                        onClick={() => setIsCreatingTemplate(true)}
+                        className="w-full p-4 border-2 border-dashed rounded-lg transition-all flex items-center justify-center gap-3 font-bold hover:opacity-90 shadow-md hover:shadow-lg"
+                        style={{
+                            backgroundColor: isHealthMode ? '#d1fae5' : 'rgba(6, 182, 212, 0.2)',
+                            borderColor: isHealthMode ? '#6ee7b7' : 'rgba(34, 211, 238, 0.5)',
+                            color: isHealthMode ? '#047857' : '#22d3ee'
+                        }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Crear Nueva Plantilla</span>
+                    </button>
                 ) : (
-                    <div className="text-center py-8 text-sm transition-colors duration-500" style={{ color: textSecondary }}>
-                        <p>No hay plantillas para este sector</p>
+                    <div className="space-y-4">
+                        {/* Header con título y botón cancelar */}
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-bold transition-colors" style={{ color: textColor }}>
+                                Nueva Plantilla
+                            </h3>
+                            <button
+                                onClick={() => {
+                                    setIsCreatingTemplate(false);
+                                    setNewSchema([{ id: `field-${Date.now()}`, name: '', type: 'STRING' }]);
+                                    setNewPrompt('Extrae la información clave del siguiente documento según el esquema JSON proporcionado.');
+                                }}
+                                className="text-sm px-3 py-1 rounded transition-colors"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#fee2e2' : 'rgba(239, 68, 68, 0.2)',
+                                    color: isHealthMode ? '#dc2626' : '#f87171'
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+
+                        {/* Formulario de nombre y descripción */}
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-sm font-medium mb-1 transition-colors" style={{ color: textColor }}>
+                                    Nombre de la Plantilla
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: Factura Médica"
+                                    value={newTemplateName}
+                                    onChange={(e) => setNewTemplateName(e.target.value)}
+                                    className="w-full rounded px-3 py-2 text-sm transition-colors"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                        borderWidth: '1px',
+                                        borderStyle: 'solid',
+                                        borderColor: borderColor,
+                                        color: textColor
+                                    }}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1 transition-colors" style={{ color: textColor }}>
+                                    Descripción (opcional)
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Breve descripción"
+                                    value={newTemplateDescription}
+                                    onChange={(e) => setNewTemplateDescription(e.target.value)}
+                                    className="w-full rounded px-3 py-2 text-sm transition-colors"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                        borderWidth: '1px',
+                                        borderStyle: 'solid',
+                                        borderColor: borderColor,
+                                        color: textColor
+                                    }}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1 transition-colors" style={{ color: textColor }}>
+                                    Prompt de Extracción
+                                </label>
+                                <textarea
+                                    value={newPrompt}
+                                    onChange={(e) => setNewPrompt(e.target.value)}
+                                    rows={3}
+                                    className="w-full rounded px-3 py-2 text-sm transition-colors"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                        borderWidth: '1px',
+                                        borderStyle: 'solid',
+                                        borderColor: borderColor,
+                                        color: textColor
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Schema Builder */}
+                        <div>
+                            <label className="block text-sm font-medium mb-2 transition-colors" style={{ color: textColor }}>
+                                Campos del Esquema
+                            </label>
+                            <SchemaBuilder
+                                schema={newSchema}
+                                setSchema={setNewSchema}
+                                theme={theme}
+                                isHealthMode={isHealthMode}
+                            />
+                        </div>
+
+                        {/* Botón guardar */}
+                        <button
+                            onClick={handleSaveTemplate}
+                            disabled={!newTemplateName.trim() || newSchema.length === 0}
+                            className="w-full py-3 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                                backgroundColor: isHealthMode ? '#047857' : '#06b6d4',
+                                color: '#ffffff'
+                            }}
+                        >
+                            Guardar Plantilla
+                        </button>
                     </div>
                 )}
 
-                {/* Modelos Guardados */}
-                <div>
+                {/* Plantillas del sector seleccionado - solo mostrar si NO estamos creando */}
+                {!isCreatingTemplate && (
+                    <>
+                        {filteredTemplates.length > 0 ? (
+                            <div>
+                                <h3
+                                    className="text-sm font-bold mb-3 flex items-center gap-2 transition-colors duration-500"
+                                    style={{ color: textColor }}
+                                >
+                                    <span className="text-lg">{currentSectorInfo?.icon}</span>
+                                    Plantillas de {currentSectorInfo?.name}
+                                </h3>
+                                <div className="space-y-2">
+                                    {filteredTemplates.map(template => (
+                                        <TemplateCard key={template.id} template={template} />
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-8 text-sm transition-colors duration-500" style={{ color: textSecondary }}>
+                                <p>No hay plantillas para este sector</p>
+                            </div>
+                        )}
+
+                        {/* Modelos Guardados */}
+                        <div>
                     <div className="flex items-center justify-between mb-3">
                         <h3
                             className="text-sm font-bold flex items-center gap-2 transition-colors duration-500"
@@ -483,6 +610,8 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                         </div>
                     )}
                 </div>
+                    </>
+                )}
             </div>
 
             {/* Modal de Certificaciones HIPAA */}
