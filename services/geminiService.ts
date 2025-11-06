@@ -155,15 +155,33 @@ INSTRUCCIONES:
 2. Para cada dato, crea un campo con:
    - name: nombre del campo en snake_case (sin espacios, sin tildes, ej: "nombre_paciente")
    - type: uno de estos tipos: STRING, NUMBER, BOOLEAN, ARRAY_OF_STRINGS, ARRAY_OF_OBJECTS
+   - children: SOLO si type es ARRAY_OF_OBJECTS, define los sub-campos del objeto
 3. Si menciona una lista o varios elementos del mismo tipo, usa ARRAY_OF_STRINGS
-4. Si menciona objetos complejos con sub-campos, usa ARRAY_OF_OBJECTS
+4. Si menciona objetos complejos con sub-campos, usa ARRAY_OF_OBJECTS y define los children
 
 TIPOS:
 - STRING: Para texto, nombres, descripciones, fechas
 - NUMBER: Para números, cantidades, precios
 - BOOLEAN: Para sí/no, verdadero/falso
 - ARRAY_OF_STRINGS: Para listas simples
-- ARRAY_OF_OBJECTS: Para listas con estructura (ej: lista de productos con nombre y precio)
+- ARRAY_OF_OBJECTS: Para listas con estructura (ej: lista de medicamentos con nombre, dosis, frecuencia)
+
+EJEMPLOS:
+Para "lista de medicamentos con nombre y dosis":
+{
+  "name": "medicamentos",
+  "type": "ARRAY_OF_OBJECTS",
+  "children": [
+    {"name": "nombre", "type": "STRING"},
+    {"name": "dosis", "type": "STRING"}
+  ]
+}
+
+Para "nombre del paciente":
+{
+  "name": "nombre_paciente",
+  "type": "STRING"
+}
 
 Responde SOLO con un JSON con este formato:
 {
@@ -172,7 +190,14 @@ Responde SOLO con un JSON con este formato:
       "name": "nombre_campo",
       "type": "STRING"
     },
-    ...
+    {
+      "name": "campo_complejo",
+      "type": "ARRAY_OF_OBJECTS",
+      "children": [
+        {"name": "subcampo1", "type": "STRING"},
+        {"name": "subcampo2", "type": "NUMBER"}
+      ]
+    }
   ]
 }`;
 
@@ -188,15 +213,23 @@ Responde SOLO con un JSON con este formato:
         const jsonStr = response.text.trim();
         const result = JSON.parse(jsonStr);
 
+        // Recursive function to add IDs to fields
+        const addIdsToFields = (fields: any[], prefix: string = ''): SchemaField[] => {
+            return fields.map((field: any, index: number) => {
+                const id = prefix ? `${prefix}-${index}` : `field-${Date.now()}-${index}`;
+                return {
+                    id,
+                    name: field.name,
+                    type: field.type,
+                    children: field.children && field.children.length > 0
+                        ? addIdsToFields(field.children, `${id}-child`)
+                        : undefined
+                };
+            });
+        };
+
         // Convert to SchemaField format with IDs
-        const fields: SchemaField[] = result.fields.map((field: any, index: number) => ({
-            id: `field-${Date.now()}-${index}`,
-            name: field.name,
-            type: field.type,
-            children: field.type === 'ARRAY_OF_OBJECTS' ? [
-                { id: `field-${Date.now()}-${index}-0`, name: '', type: 'STRING' }
-            ] : undefined
-        }));
+        const fields: SchemaField[] = addIdsToFields(result.fields);
 
         return fields;
     } catch (error) {
@@ -220,12 +253,22 @@ export const extractDataFromDocument = async (
         text: prompt,
     };
     
-    // Filter out fields without a name from the final schema
-    const validSchemaFields = schema.filter(f => f.name.trim() !== '');
+    // Recursive function to filter out fields without valid names
+    const filterValidFields = (fields: SchemaField[]): SchemaField[] => {
+        return fields
+            .filter(f => f.name.trim() !== '')
+            .map(f => ({
+                ...f,
+                children: f.children ? filterValidFields(f.children) : undefined
+            }));
+    };
+
+    // Filter out fields without a name from the final schema (recursively)
+    const validSchemaFields = filterValidFields(schema);
     if (validSchemaFields.length === 0) {
         throw new Error("El esquema está vacío o no contiene campos con nombre válidos.");
     }
-    
+
     const geminiSchema = convertSchemaToGemini(validSchemaFields);
 
 
