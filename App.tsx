@@ -91,6 +91,7 @@ function App() {
     const [currentSector, setCurrentSector] = useState<Sector>('salud');
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
     const [showingResults, setShowingResults] = useState<boolean>(false);
+    const [showResultsExpanded, setShowResultsExpanded] = useState<boolean>(false);
 
     // State for the editor, which can be reused across different files
     const [prompt, setPrompt] = useState<string>('Extrae la información clave del siguiente documento según el esquema JSON proporcionado.');
@@ -430,12 +431,28 @@ function App() {
                                     </svg>
                                     Ver Plantillas
                                 </button>
-                                <div className="flex-1">
-                                    <ResultsViewer
-                                        results={history}
-                                        theme={currentTheme}
-                                        isHealthMode={isHealthMode}
-                                    />
+                                <div className="flex-1 flex flex-col gap-2">
+                                    {/* Botón para expandir */}
+                                    <button
+                                        onClick={() => setShowResultsExpanded(true)}
+                                        className="px-2 py-1.5 rounded text-xs font-medium transition-all flex items-center justify-center gap-1.5 hover:opacity-90"
+                                        style={{
+                                            backgroundColor: isHealthMode ? '#047857' : '#06b6d4',
+                                            color: '#ffffff'
+                                        }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                                        </svg>
+                                        Expandir Vista
+                                    </button>
+                                    <div className="flex-1 overflow-hidden">
+                                        <ResultsViewer
+                                            results={history}
+                                            theme={currentTheme}
+                                            isHealthMode={isHealthMode}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         ) : (
@@ -482,6 +499,59 @@ function App() {
                 isOpen={isHelpModalOpen}
                 onClose={() => setIsHelpModalOpen(false)}
             />
+
+            {/* Modal expandido de resultados */}
+            {showResultsExpanded && history.length > 0 && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+                    onClick={() => setShowResultsExpanded(false)}
+                >
+                    <div
+                        className="w-full max-w-6xl h-[90vh] rounded-lg shadow-2xl overflow-hidden"
+                        style={{
+                            backgroundColor: isHealthMode ? '#ffffff' : '#1e293b'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header del modal */}
+                        <div
+                            className="flex items-center justify-between p-4 border-b"
+                            style={{
+                                backgroundColor: isHealthMode ? '#f0fdf4' : 'rgba(15, 23, 42, 0.5)',
+                                borderBottomColor: isHealthMode ? '#6ee7b7' : '#475569'
+                            }}
+                        >
+                            <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: isHealthMode ? '#047857' : '#f1f5f9' }}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: isHealthMode ? '#047857' : '#06b6d4' }}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Resultados de Extracción
+                            </h2>
+                            <button
+                                onClick={() => setShowResultsExpanded(false)}
+                                className="p-2 rounded-lg transition-all hover:opacity-80"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#fee2e2' : 'rgba(239, 68, 68, 0.2)',
+                                    color: isHealthMode ? '#dc2626' : '#f87171'
+                                }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Contenido del modal */}
+                        <div className="h-[calc(90vh-72px)] overflow-hidden">
+                            <ResultsViewer
+                                results={history}
+                                theme={currentTheme}
+                                isHealthMode={isHealthMode}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
