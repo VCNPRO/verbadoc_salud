@@ -356,6 +356,22 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                     backgroundColor: isHealthMode ? '#f0fdf4' : 'transparent'
                 }}
             >
+                {/* Botón para crear nueva plantilla */}
+                <button
+                    onClick={() => setShowSaveDialog(true)}
+                    className="w-full p-4 border-2 border-dashed rounded-lg transition-all flex items-center justify-center gap-3 font-bold hover:opacity-90 shadow-md hover:shadow-lg"
+                    style={{
+                        backgroundColor: isHealthMode ? '#d1fae5' : 'rgba(6, 182, 212, 0.2)',
+                        borderColor: isHealthMode ? '#6ee7b7' : 'rgba(34, 211, 238, 0.5)',
+                        color: isHealthMode ? '#047857' : '#22d3ee'
+                    }}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Crear Nueva Plantilla</span>
+                </button>
+
                 {/* Plantillas del sector seleccionado */}
                 {filteredTemplates.length > 0 ? (
                     <div>
