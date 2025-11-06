@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { ExtractionResult } from '../types.ts';
 import { JsonViewer } from './JsonViewer.tsx';
-import { downloadExcel } from '../utils/exportUtils.ts';
+import { downloadExcel, downloadCSV } from '../utils/exportUtils.ts';
 
 interface ResultsViewerProps {
     results: ExtractionResult[];
@@ -37,57 +37,19 @@ export const ResultsViewer: React.FC<ResultsViewerProps> = ({ results, theme, is
 
     const handleDownloadCSV = () => {
         if (!selectedResult) return;
-
-        // Convertir JSON a CSV
-        const data = selectedResult.extractedData;
-        let csv = '';
-
-        // Si es un objeto plano, crear CSV simple
-        if (typeof data === 'object' && !Array.isArray(data)) {
-            const headers = Object.keys(data);
-            csv = headers.join(',') + '\n';
-            csv += headers.map(h => {
-                const value = data[h];
-                // Manejar valores que contienen comas o comillas
-                if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
-                    return `"${value.replace(/"/g, '""')}"`;
-                }
-                return value;
-            }).join(',');
-        }
-        // Si es un array de objetos
-        else if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
-            const headers = Object.keys(data[0]);
-            csv = headers.join(',') + '\n';
-            csv += data.map((row: any) =>
-                headers.map(h => {
-                    const value = row[h];
-                    if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
-                        return `"${value.replace(/"/g, '""')}"`;
-                    }
-                    return value;
-                }).join(',')
-            ).join('\n');
-        }
-        // Fallback: convertir todo el JSON a string
-        else {
-            csv = 'data\n' + JSON.stringify(data);
-        }
-
-        const dataBlob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${selectedResult.fileName.replace(/\.[^/.]+$/, '')}_extraccion.csv`;
-        link.click();
-        URL.revokeObjectURL(url);
+        downloadCSV(
+            selectedResult.extractedData,
+            `${selectedResult.fileName.replace(/\.[^/.]+$/, '')}_extraccion`,
+            selectedResult.schema
+        );
     };
 
     const handleDownloadExcel = () => {
         if (!selectedResult) return;
         downloadExcel(
             selectedResult.extractedData,
-            `${selectedResult.fileName.replace(/\.[^/.]+$/, '')}_extraccion`
+            `${selectedResult.fileName.replace(/\.[^/.]+$/, '')}_extraccion`,
+            selectedResult.schema
         );
     };
 

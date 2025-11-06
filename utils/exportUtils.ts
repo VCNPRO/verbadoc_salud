@@ -1,11 +1,41 @@
 // Utilidades para exportar datos a diferentes formatos
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import type { SchemaField } from '../types.ts';
+
+/**
+ * Extrae el orden de campos del schema de forma recursiva
+ */
+const getFieldOrderFromSchema = (schema: SchemaField[], prefix = ''): string[] => {
+    const fields: string[] = [];
+
+    for (const field of schema) {
+        const fieldName = prefix ? `${prefix}.${field.name}` : field.name;
+
+        // Si es un objeto con hijos, procesar recursivamente
+        if (field.type === 'OBJECT' && field.children) {
+            fields.push(...getFieldOrderFromSchema(field.children, fieldName));
+        }
+        // Si es ARRAY_OF_OBJECTS con hijos, agregar el campo base y sus propiedades
+        else if (field.type === 'ARRAY_OF_OBJECTS' && field.children) {
+            // Agregar las propiedades del objeto dentro del array
+            for (const child of field.children) {
+                fields.push(`${fieldName}.${child.name}`);
+            }
+        }
+        // Campo simple
+        else {
+            fields.push(fieldName);
+        }
+    }
+
+    return fields;
+};
 
 /**
  * Convierte un objeto JSON a PDF y retorna el blob
  */
-export const jsonToPDF = (data: object | object[], filename: string): Blob => {
+export const jsonToPDF = (data: object | object[], filename: string, schema?: SchemaField[]): Blob => {
     const pdf = new jsPDF();
     const dataArray = Array.isArray(data) ? data : [data];
 
@@ -42,9 +72,16 @@ export const jsonToPDF = (data: object | object[], filename: string): Blob => {
     };
 
     const flattenedData = dataArray.map(item => flattenObject(item));
-    const allColumns = Array.from(
-        new Set(flattenedData.flatMap(item => Object.keys(item)))
-    );
+
+    // Si tenemos schema, usar su orden; si no, extraer de los datos
+    let allColumns: string[];
+    if (schema && schema.length > 0) {
+        allColumns = getFieldOrderFromSchema(schema);
+    } else {
+        allColumns = Array.from(
+            new Set(flattenedData.flatMap(item => Object.keys(item)))
+        );
+    }
 
     // Preparar datos para la tabla
     const tableData = flattenedData.map(item =>
@@ -79,8 +116,8 @@ export const jsonToPDF = (data: object | object[], filename: string): Blob => {
 /**
  * Descarga un archivo PDF
  */
-export const downloadPDF = (data: object | object[], filename: string) => {
-    const blob = jsonToPDF(data, filename);
+export const downloadPDF = (data: object | object[], filename: string, schema?: SchemaField[]) => {
+    const blob = jsonToPDF(data, filename, schema);
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
 
@@ -96,15 +133,15 @@ export const downloadPDF = (data: object | object[], filename: string) => {
 /**
  * Genera una URL de objeto para mostrar el PDF en un iframe
  */
-export const generatePDFPreviewURL = (data: object | object[], filename: string): string => {
-    const blob = jsonToPDF(data, filename);
+export const generatePDFPreviewURL = (data: object | object[], filename: string, schema?: SchemaField[]): string => {
+    const blob = jsonToPDF(data, filename, schema);
     return URL.createObjectURL(blob);
 };
 
 /**
  * Convierte un objeto JSON a CSV
  */
-export const jsonToCSV = (data: object | object[]): string => {
+export const jsonToCSV = (data: object | object[], schema?: SchemaField[]): string => {
     // Si es un solo objeto, convertirlo a array
     const dataArray = Array.isArray(data) ? data : [data];
 
@@ -133,10 +170,15 @@ export const jsonToCSV = (data: object | object[]): string => {
     // Aplanar todos los objetos
     const flattenedData = dataArray.map(item => flattenObject(item));
 
-    // Obtener todas las columnas únicas
-    const allColumns = Array.from(
-        new Set(flattenedData.flatMap(item => Object.keys(item)))
-    );
+    // Si tenemos schema, usar su orden; si no, extraer de los datos
+    let allColumns: string[];
+    if (schema && schema.length > 0) {
+        allColumns = getFieldOrderFromSchema(schema);
+    } else {
+        allColumns = Array.from(
+            new Set(flattenedData.flatMap(item => Object.keys(item)))
+        );
+    }
 
     // Crear encabezados CSV
     const headers = allColumns.map(col => `"${col}"`).join(',');
@@ -157,8 +199,8 @@ export const jsonToCSV = (data: object | object[]): string => {
 /**
  * Descarga un archivo CSV
  */
-export const downloadCSV = (data: object | object[], filename: string) => {
-    const csv = jsonToCSV(data);
+export const downloadCSV = (data: object | object[], filename: string, schema?: SchemaField[]) => {
+    const csv = jsonToCSV(data, schema);
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -175,7 +217,7 @@ export const downloadCSV = (data: object | object[], filename: string) => {
 /**
  * Convierte un objeto JSON a Excel (formato HTML que Excel puede abrir)
  */
-export const jsonToExcel = (data: object | object[]): string => {
+export const jsonToExcel = (data: object | object[], schema?: SchemaField[]): string => {
     const dataArray = Array.isArray(data) ? data : [data];
 
     if (dataArray.length === 0) {
@@ -201,9 +243,16 @@ export const jsonToExcel = (data: object | object[]): string => {
     };
 
     const flattenedData = dataArray.map(item => flattenObject(item));
-    const allColumns = Array.from(
-        new Set(flattenedData.flatMap(item => Object.keys(item)))
-    );
+
+    // Si tenemos schema, usar su orden; si no, extraer de los datos
+    let allColumns: string[];
+    if (schema && schema.length > 0) {
+        allColumns = getFieldOrderFromSchema(schema);
+    } else {
+        allColumns = Array.from(
+            new Set(flattenedData.flatMap(item => Object.keys(item)))
+        );
+    }
 
     // Crear tabla HTML para Excel
     let html = `
@@ -248,8 +297,8 @@ export const jsonToExcel = (data: object | object[]): string => {
 /**
  * Descarga un archivo Excel
  */
-export const downloadExcel = (data: object | object[], filename: string) => {
-    const html = jsonToExcel(data);
+export const downloadExcel = (data: object | object[], filename: string, schema?: SchemaField[]) => {
+    const html = jsonToExcel(data, schema);
     const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
