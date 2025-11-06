@@ -63,7 +63,17 @@ export const jsonToPDF = (data: object | object[], filename: string, schema?: Sc
             if (obj[key] !== null && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
                 Object.assign(acc, flattenObject(obj[key], prefixedKey));
             } else if (Array.isArray(obj[key])) {
-                acc[prefixedKey] = obj[key].join('; ');
+                // Verificar si es un array de objetos
+                if (obj[key].length > 0 && typeof obj[key][0] === 'object' && obj[key][0] !== null) {
+                    // Array de objetos: formatear cada objeto de forma legible (PDF usa ; como separador)
+                    acc[prefixedKey] = obj[key].map((item: any, index: number) => {
+                        const pairs = Object.entries(item).map(([k, v]) => `${k}: ${v}`);
+                        return `[${index + 1}] ${pairs.join(', ')}`;
+                    }).join('; ');
+                } else {
+                    // Array de primitivos: usar punto y coma
+                    acc[prefixedKey] = obj[key].join('; ');
+                }
             } else {
                 acc[prefixedKey] = obj[key];
             }
@@ -158,8 +168,17 @@ export const jsonToCSV = (data: object | object[], schema?: SchemaField[]): stri
             if (obj[key] !== null && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
                 Object.assign(acc, flattenObject(obj[key], prefixedKey));
             } else if (Array.isArray(obj[key])) {
-                // Convertir arrays a string separado por punto y coma
-                acc[prefixedKey] = obj[key].join('; ');
+                // Verificar si es un array de objetos
+                if (obj[key].length > 0 && typeof obj[key][0] === 'object' && obj[key][0] !== null) {
+                    // Array de objetos: formatear cada objeto de forma legible (CSV usa ; como separador)
+                    acc[prefixedKey] = obj[key].map((item: any, index: number) => {
+                        const pairs = Object.entries(item).map(([k, v]) => `${k}: ${v}`);
+                        return `[${index + 1}] ${pairs.join(', ')}`;
+                    }).join('; ');
+                } else {
+                    // Array de primitivos: usar punto y coma
+                    acc[prefixedKey] = obj[key].join('; ');
+                }
             } else {
                 acc[prefixedKey] = obj[key];
             }
@@ -238,8 +257,17 @@ export const jsonToExcel = (data: object | object[], schema?: SchemaField[]): Bl
             if (obj[key] !== null && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
                 Object.assign(acc, flattenObject(obj[key], prefixedKey));
             } else if (Array.isArray(obj[key])) {
-                // Usar saltos de línea en lugar de punto y coma para separar elementos
-                acc[prefixedKey] = obj[key].join('\n');
+                // Verificar si es un array de objetos
+                if (obj[key].length > 0 && typeof obj[key][0] === 'object' && obj[key][0] !== null) {
+                    // Array de objetos: formatear cada objeto de forma legible
+                    acc[prefixedKey] = obj[key].map((item: any, index: number) => {
+                        const lines = Object.entries(item).map(([k, v]) => `${k}: ${v}`);
+                        return `[${index + 1}]\n${lines.join('\n')}`;
+                    }).join('\n\n---\n\n');
+                } else {
+                    // Array de primitivos: usar saltos de línea
+                    acc[prefixedKey] = obj[key].join('\n');
+                }
             } else {
                 acc[prefixedKey] = obj[key];
             }
