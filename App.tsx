@@ -376,6 +376,7 @@ function App() {
                             </svg>
                             <span className="hidden sm:inline">Ayuda</span>
                         </button>
+                        </div>
                     </div>
                 </div>
             </header>
