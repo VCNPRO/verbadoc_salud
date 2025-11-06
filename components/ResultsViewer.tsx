@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { ExtractionResult } from '../types.ts';
 import { JsonViewer } from './JsonViewer.tsx';
+import { downloadExcel } from '../utils/exportUtils.ts';
 
 interface ResultsViewerProps {
     results: ExtractionResult[];
@@ -80,6 +81,14 @@ export const ResultsViewer: React.FC<ResultsViewerProps> = ({ results, theme, is
         link.download = `${selectedResult.fileName.replace(/\.[^/.]+$/, '')}_extraccion.csv`;
         link.click();
         URL.revokeObjectURL(url);
+    };
+
+    const handleDownloadExcel = () => {
+        if (!selectedResult) return;
+        downloadExcel(
+            selectedResult.extractedData,
+            `${selectedResult.fileName.replace(/\.[^/.]+$/, '')}_extraccion`
+        );
     };
 
     const handleCopyToClipboard = () => {
@@ -224,6 +233,19 @@ export const ResultsViewer: React.FC<ResultsViewerProps> = ({ results, theme, is
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                 </svg>
                                 Descargar CSV
+                            </button>
+                            <button
+                                onClick={handleDownloadExcel}
+                                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all hover:opacity-90"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#10b981' : '#0e7490',
+                                    color: '#ffffff'
+                                }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Descargar Excel
                             </button>
                             <button
                                 onClick={handleCopyToClipboard}
