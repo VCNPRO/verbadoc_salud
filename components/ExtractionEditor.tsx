@@ -51,7 +51,7 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
     const [isSearchingImage, setIsSearchingImage] = useState(false);
     const [imageSearchResult, setImageSearchResult] = useState<any>(null);
     const [showImageSearch, setShowImageSearch] = useState(false);
-    const [showPrompt, setShowPrompt] = useState(false); // Prompt colapsado por defecto
+    const [showPrompt, setShowPrompt] = useState(true); // Prompt EXPANDIDO por defecto para visibilidad
 
     const cardBg = isHealthMode ? '#ffffff' : 'rgba(30, 41, 59, 0.5)';
     const borderColor = isHealthMode ? theme?.border || '#6ee7b7' : 'rgba(51, 65, 85, 0.5)';
@@ -160,12 +160,20 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
                         onClick={() => setShowPrompt(!showPrompt)}
                         className="flex items-center justify-between w-full text-left mb-2"
                     >
-                        <label className="text-base font-medium flex items-center gap-2 cursor-pointer" style={{ color: textColor }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" style={{ color: accentColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            1. Prompt (Instrucción)
-                        </label>
+                        <div className="flex items-center gap-2">
+                            <label className="text-base font-medium flex items-center gap-2 cursor-pointer" style={{ color: textColor }}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" style={{ color: accentColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                1. Prompt (Instrucción)
+                            </label>
+                            <span className="text-xs px-2 py-0.5 rounded font-medium" style={{
+                                backgroundColor: isHealthMode ? '#d1fae5' : 'rgba(6, 182, 212, 0.2)',
+                                color: isHealthMode ? '#047857' : '#22d3ee'
+                            }}>
+                                Editable ✏️
+                            </span>
+                        </div>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className={`h-5 w-5 transition-transform ${showPrompt ? 'rotate-180' : ''}`}
@@ -180,6 +188,17 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
 
                     {showPrompt && (
                         <>
+                            <div className="mb-3 p-3 rounded-lg border" style={{
+                                backgroundColor: isHealthMode ? '#ecfdf5' : 'rgba(6, 182, 212, 0.1)',
+                                borderColor: isHealthMode ? '#6ee7b7' : 'rgba(34, 211, 238, 0.3)'
+                            }}>
+                                <p className="text-xs font-medium" style={{ color: isHealthMode ? '#047857' : '#22d3ee' }}>
+                                    💡 <strong>Importante:</strong> Personaliza esta instrucción para describir QUÉ información quieres extraer.
+                                </p>
+                                <p className="text-xs mt-1" style={{ color: textSecondary }}>
+                                    Sé específico: menciona campos como "nombre del paciente", "diagnóstico", "fecha", etc.
+                                </p>
+                            </div>
                             <div className="flex justify-end mb-2">
                                 <button
                                     onClick={useExample}
@@ -203,7 +222,7 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
                                     borderColor: isHealthMode ? '#d1d5db' : '#475569',
                                     color: textColor
                                 }}
-                                placeholder="Ej: Extrae los detalles de la factura del documento."
+                                placeholder="Ej: Extrae del informe médico: nombre del paciente, fecha de consulta, diagnóstico principal y tratamiento prescrito."
                             />
                         </>
                     )}
