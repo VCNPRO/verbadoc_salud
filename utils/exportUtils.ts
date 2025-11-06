@@ -190,7 +190,8 @@ export const jsonToExcel = (data: object | object[]): string => {
             if (obj[key] !== null && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
                 Object.assign(acc, flattenObject(obj[key], prefixedKey));
             } else if (Array.isArray(obj[key])) {
-                acc[prefixedKey] = obj[key].join('; ');
+                // Usar saltos de línea en lugar de punto y coma para separar elementos
+                acc[prefixedKey] = obj[key].join('\n');
             } else {
                 acc[prefixedKey] = obj[key];
             }
@@ -232,7 +233,7 @@ export const jsonToExcel = (data: object | object[]): string => {
                 <tbody>
                     ${flattenedData.map(item => `
                         <tr>
-                            ${allColumns.map(col => `<td style="padding: 6px;">${item[col] ?? ''}</td>`).join('')}
+                            ${allColumns.map(col => `<td style="padding: 6px; white-space: pre-wrap; vertical-align: top;">${item[col] ?? ''}</td>`).join('')}
                         </tr>
                     `).join('')}
                 </tbody>

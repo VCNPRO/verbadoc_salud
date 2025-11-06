@@ -16,7 +16,7 @@ import { HelpModal } from './components/HelpModal.tsx';
 import { ResultsViewer } from './components/ResultsViewer.tsx';
 // Fix: Use explicit file extension in import.
 import type { UploadedFile, ExtractionResult, SchemaField, Sector } from './types.ts';
-import { setApiKey } from './services/geminiService.ts';
+import { setApiKey, AVAILABLE_MODELS, type GeminiModel } from './services/geminiService.ts';
 import { getSectorById, getDefaultTheme } from './utils/sectorsConfig.ts';
 
 // Helper to create a dummy file for the example
@@ -90,8 +90,8 @@ function App() {
     const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
     const [currentSector, setCurrentSector] = useState<Sector>('salud');
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
-    const [showingResults, setShowingResults] = useState<boolean>(false);
     const [showResultsExpanded, setShowResultsExpanded] = useState<boolean>(false);
+    const [selectedModel, setSelectedModel] = useState<GeminiModel>('gemini-2.5-flash');
 
     // State for the editor, which can be reused across different files
     const [prompt, setPrompt] = useState<string>('Extrae la información clave del siguiente documento según el esquema JSON proporcionado.');
@@ -126,7 +126,7 @@ function App() {
         setActiveFileId(id);
     };
     
-    const handleExtract = async (modelId?: string) => {
+    const handleExtract = async () => {
         if (!activeFile) return;
 
         // Lazy import the service
@@ -139,7 +139,7 @@ function App() {
         );
 
         try {
-            const extractedData = await extractDataFromDocument(activeFile.file, schema, prompt, modelId as any);
+            const extractedData = await extractDataFromDocument(activeFile.file, schema, prompt, selectedModel);
 
             setFiles(currentFiles =>
                 currentFiles.map(f => f.id === activeFile.id ? { ...f, status: 'completado', extractedData: extractedData, error: undefined } : f)
@@ -154,7 +154,6 @@ function App() {
                 timestamp: new Date().toISOString(),
             };
             setHistory(currentHistory => [newHistoryEntry, ...currentHistory]);
-            setShowingResults(true); // Mostrar resultados automáticamente
 
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Un error desconocido ocurrió.';
@@ -166,7 +165,7 @@ function App() {
         }
     };
 
-    const handleExtractAll = async (modelId?: string) => {
+    const handleExtractAll = async () => {
         const pendingFiles = files.filter(f => f.status === 'pendiente' || f.status === 'error');
         if (pendingFiles.length === 0) return;
 
@@ -182,7 +181,7 @@ function App() {
             );
 
             try {
-                const extractedData = await extractDataFromDocument(file.file, schema, prompt, modelId as any);
+                const extractedData = await extractDataFromDocument(file.file, schema, prompt, selectedModel);
 
                 setFiles(currentFiles =>
                     currentFiles.map(f => f.id === file.id ? { ...f, status: 'completado', extractedData: extractedData, error: undefined } : f)
@@ -334,7 +333,35 @@ function App() {
                                 trabajando para {isHealthMode && <span className="font-bold px-2 py-1 bg-green-100 text-green-800 rounded-md">🏥 Sector Salud</span>}
                             </p>
                         </div>
-                        <button
+                        <div className="flex items-center gap-4">
+                            {/* Selector de Modelo IA */}
+                            <div className="flex items-center gap-2">
+                                <label
+                                    htmlFor="model-select"
+                                    className="text-xs font-medium hidden sm:inline"
+                                    style={{ color: isHealthMode ? '#047857' : '#94a3b8' }}
+                                >
+                                    Modelo IA:
+                                </label>
+                                <select
+                                    id="model-select"
+                                    value={selectedModel}
+                                    onChange={(e) => setSelectedModel(e.target.value as GeminiModel)}
+                                    className="text-sm px-3 py-1.5 rounded-md border-2 focus:outline-none focus:ring-2 transition-all"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#f9fafb' : '#1e293b',
+                                        borderColor: isHealthMode ? '#6ee7b7' : '#475569',
+                                        color: isHealthMode ? '#047857' : '#f1f5f9'
+                                    }}
+                                >
+                                    {AVAILABLE_MODELS.map(model => (
+                                        <option key={model.id} value={model.id}>
+                                            {model.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button
                             onClick={() => setIsHelpModalOpen(true)}
                             className="flex items-center gap-2 px-4 py-2 border-2 rounded-lg text-sm transition-all duration-500 font-bold shadow-lg hover:shadow-xl hover:scale-105"
                             style={{
@@ -412,80 +439,35 @@ function App() {
                         />
                     </div>
                     <div className="lg:col-span-3 h-full">
-                        {showingResults && history.length > 0 ? (
-                            <div className="h-full flex flex-col">
-                                {/* Botón para volver a plantillas */}
+                        <div className="h-full flex flex-col">
+                            {/* Botón para ver resultados en vista expandida */}
+                            {history.length > 0 && (
                                 <button
-                                    onClick={() => setShowingResults(false)}
-                                    className="mb-2 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 hover:opacity-90"
+                                    onClick={() => setShowResultsExpanded(true)}
+                                    className="mb-2 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 hover:opacity-90 hover:scale-105 shadow-md"
                                     style={{
-                                        backgroundColor: isHealthMode ? '#d1fae5' : 'rgba(100, 116, 139, 0.5)',
-                                        color: isHealthMode ? '#047857' : '#f1f5f9',
-                                        borderWidth: '1px',
-                                        borderStyle: 'solid',
-                                        borderColor: isHealthMode ? '#6ee7b7' : 'rgba(71, 85, 105, 0.5)'
+                                        backgroundColor: isHealthMode ? '#047857' : '#06b6d4',
+                                        color: '#ffffff'
                                     }}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
-                                    Ver Plantillas
+                                    Ver Resultados ({history.length})
                                 </button>
-                                <div className="flex-1 flex flex-col gap-2">
-                                    {/* Botón para expandir */}
-                                    <button
-                                        onClick={() => setShowResultsExpanded(true)}
-                                        className="px-2 py-1.5 rounded text-xs font-medium transition-all flex items-center justify-center gap-1.5 hover:opacity-90"
-                                        style={{
-                                            backgroundColor: isHealthMode ? '#047857' : '#06b6d4',
-                                            color: '#ffffff'
-                                        }}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                                        </svg>
-                                        Expandir Vista
-                                    </button>
-                                    <div className="flex-1 overflow-hidden">
-                                        <ResultsViewer
-                                            results={history}
-                                            theme={currentTheme}
-                                            isHealthMode={isHealthMode}
-                                        />
-                                    </div>
-                                </div>
+                            )}
+                            <div className="flex-1">
+                                <TemplatesPanel
+                                    onSelectTemplate={handleSelectTemplate}
+                                    currentSchema={schema}
+                                    currentPrompt={prompt}
+                                    onSectorChange={handleSectorChange}
+                                    currentSector={currentSector}
+                                    theme={currentTheme}
+                                    isHealthMode={isHealthMode}
+                                />
                             </div>
-                        ) : (
-                            <div className="h-full flex flex-col">
-                                {/* Botón para ver resultados si hay history */}
-                                {history.length > 0 && (
-                                    <button
-                                        onClick={() => setShowingResults(true)}
-                                        className="mb-2 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 hover:opacity-90"
-                                        style={{
-                                            backgroundColor: isHealthMode ? '#047857' : '#06b6d4',
-                                            color: '#ffffff'
-                                        }}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        Ver Resultados ({history.length})
-                                    </button>
-                                )}
-                                <div className="flex-1">
-                                    <TemplatesPanel
-                                        onSelectTemplate={handleSelectTemplate}
-                                        currentSchema={schema}
-                                        currentPrompt={prompt}
-                                        onSectorChange={handleSectorChange}
-                                        currentSector={currentSector}
-                                        theme={currentTheme}
-                                        isHealthMode={isHealthMode}
-                                    />
-                                </div>
-                            </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             </main>
