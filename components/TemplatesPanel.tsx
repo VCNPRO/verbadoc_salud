@@ -294,22 +294,106 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                     backgroundColor: isHealthMode ? '#f0fdf4' : 'transparent'
                 }}
             >
-                {/* Botón para crear nueva plantilla */}
+                {/* Botones de Crear y Guardar Plantilla juntos */}
                 {!isCreatingTemplate ? (
-                    <button
-                        onClick={() => setIsCreatingTemplate(true)}
-                        className="w-full p-2 border border-dashed rounded transition-all flex items-center justify-center gap-2 font-medium text-sm hover:opacity-90"
-                        style={{
-                            backgroundColor: isHealthMode ? '#d1fae5' : 'rgba(6, 182, 212, 0.2)',
-                            borderColor: isHealthMode ? '#6ee7b7' : 'rgba(34, 211, 238, 0.5)',
-                            color: isHealthMode ? '#047857' : '#22d3ee'
-                        }}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span>Crear Plantilla</span>
-                    </button>
+                    <div className="space-y-2">
+                        <button
+                            onClick={() => setIsCreatingTemplate(true)}
+                            className="w-full p-2 border border-dashed rounded transition-all flex items-center justify-center gap-2 font-medium text-sm hover:opacity-90"
+                            style={{
+                                backgroundColor: isHealthMode ? '#d1fae5' : 'rgba(6, 182, 212, 0.2)',
+                                borderColor: isHealthMode ? '#6ee7b7' : 'rgba(34, 211, 238, 0.5)',
+                                color: isHealthMode ? '#047857' : '#22d3ee'
+                            }}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>Crear Plantilla</span>
+                        </button>
+
+                        {/* Botón para guardar plantilla actual del editor */}
+                        {currentSchema && currentPrompt && (
+                            <button
+                                onClick={() => setShowSaveDialog(true)}
+                                className="w-full p-2 border rounded transition-all flex items-center justify-center gap-2 font-medium text-sm hover:opacity-90"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#f3e8ff' : 'rgba(147, 51, 234, 0.2)',
+                                    borderColor: isHealthMode ? '#c084fc' : 'rgba(168, 85, 247, 0.5)',
+                                    color: isHealthMode ? '#7c3aed' : '#e9d5ff'
+                                }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                                <span>Guardar Plantilla</span>
+                            </button>
+                        )}
+
+                        {/* Dialog para guardar plantilla actual */}
+                        {showSaveDialog && (
+                            <div className="p-3 rounded-lg border space-y-2" style={{
+                                backgroundColor: isHealthMode ? '#f9fafb' : 'rgba(51, 65, 85, 0.5)',
+                                borderColor: isHealthMode ? '#d1d5db' : '#475569'
+                            }}>
+                                <input
+                                    type="text"
+                                    placeholder="Nombre de la plantilla"
+                                    value={newTemplateName}
+                                    onChange={(e) => setNewTemplateName(e.target.value)}
+                                    className="w-full rounded px-2 py-1.5 text-sm"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                        borderWidth: '1px',
+                                        borderStyle: 'solid',
+                                        borderColor: isHealthMode ? '#d1d5db' : '#475569',
+                                        color: textColor
+                                    }}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Descripción (opcional)"
+                                    value={newTemplateDescription}
+                                    onChange={(e) => setNewTemplateDescription(e.target.value)}
+                                    className="w-full rounded px-2 py-1.5 text-sm"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                        borderWidth: '1px',
+                                        borderStyle: 'solid',
+                                        borderColor: isHealthMode ? '#d1d5db' : '#475569',
+                                        color: textColor
+                                    }}
+                                />
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleSaveTemplate}
+                                        disabled={!newTemplateName.trim()}
+                                        className="flex-1 px-2 py-1.5 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:opacity-90"
+                                        style={{
+                                            backgroundColor: isHealthMode ? '#7c3aed' : '#a855f7',
+                                            color: '#ffffff'
+                                        }}
+                                    >
+                                        Guardar
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setShowSaveDialog(false);
+                                            setNewTemplateName('');
+                                            setNewTemplateDescription('');
+                                        }}
+                                        className="flex-1 px-2 py-1.5 rounded text-sm font-medium transition-colors hover:opacity-80"
+                                        style={{
+                                            backgroundColor: isHealthMode ? '#e5e7eb' : '#475569',
+                                            color: isHealthMode ? '#374151' : '#f1f5f9'
+                                        }}
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 ) : (
                     <div className="space-y-3">
                         {/* Header con título y botón cancelar */}
@@ -463,63 +547,6 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                             {showArchived ? 'Ocultar archivadas' : 'Ver archivadas'}
                         </button>
                     </div>
-
-                    {/* Botón para guardar nueva plantilla */}
-                    {currentSchema && currentPrompt && (
-                        <button
-                            onClick={() => setShowSaveDialog(true)}
-                            className="w-full mb-3 p-3 border-2 rounded-lg transition-all flex items-center justify-center gap-2 font-bold hover:opacity-90"
-                            style={{
-                                backgroundColor: isHealthMode ? '#f3e8ff' : 'rgba(147, 51, 234, 0.2)',
-                                borderColor: isHealthMode ? '#c084fc' : 'rgba(168, 85, 247, 0.5)',
-                                color: isHealthMode ? '#7c3aed' : '#e9d5ff'
-                            }}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            Guardar Plantilla Actual
-                        </button>
-                    )}
-
-                    {/* Dialog para guardar plantilla */}
-                    {showSaveDialog && (
-                        <div className="mb-3 p-3 bg-slate-700/50 border border-slate-600 rounded-lg space-y-2">
-                            <input
-                                type="text"
-                                placeholder="Nombre de la plantilla"
-                                value={newTemplateName}
-                                onChange={(e) => setNewTemplateName(e.target.value)}
-                                className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-slate-200"
-                            />
-                            <input
-                                type="text"
-                                placeholder="Descripción (opcional)"
-                                value={newTemplateDescription}
-                                onChange={(e) => setNewTemplateDescription(e.target.value)}
-                                className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-slate-200"
-                            />
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handleSaveTemplate}
-                                    disabled={!newTemplateName.trim()}
-                                    className="flex-1 px-3 py-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded text-sm transition-colors"
-                                >
-                                    Guardar
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowSaveDialog(false);
-                                        setNewTemplateName('');
-                                        setNewTemplateDescription('');
-                                    }}
-                                    className="flex-1 px-3 py-1 bg-slate-600 hover:bg-slate-500 text-white rounded text-sm transition-colors"
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-                        </div>
-                    )}
 
                     {activeCustomTemplates.length > 0 ? (
                         <div className="space-y-2">
