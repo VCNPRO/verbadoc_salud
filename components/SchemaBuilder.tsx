@@ -77,31 +77,34 @@ const SchemaFieldRow: React.FC<{
     };
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
             <div
-                className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center p-3 rounded-md"
-                style={{ backgroundColor: rowBg }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-2 items-center p-2 rounded border"
+                style={{
+                    backgroundColor: rowBg,
+                    borderColor: field.error ? '#ef4444' : borderColor
+                }}
             >
                  <input
                     type="text"
                     value={field.name}
                     onChange={handleNameChange}
-                    placeholder="Nombre del Campo (ej., nombre_cliente)"
-                    className="w-full rounded-md p-2 focus:outline-none transition-shadow text-sm"
+                    placeholder="nombre_campo"
+                    className="w-full rounded px-2 py-1.5 focus:outline-none focus:ring-1 transition-all text-sm"
                     style={{
                         backgroundColor: bgColor,
                         borderWidth: '1px',
                         borderStyle: 'solid',
                         borderColor: field.error ? '#ef4444' : borderColor,
                         color: textColor,
-                        boxShadow: field.error ? '0 0 0 2px rgba(239, 68, 68, 0.3)' : undefined
+                        focusRingColor: accentColor
                     }}
                 />
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     <select
                         value={field.type}
                         onChange={(e) => onUpdate(path, { type: e.target.value as SchemaFieldType })}
-                        className="w-full rounded-md p-2 focus:outline-none transition-shadow text-sm appearance-none"
+                        className="flex-1 rounded px-2 py-1.5 focus:outline-none focus:ring-1 transition-all text-sm appearance-none"
                         style={{
                             backgroundColor: bgColor,
                             borderWidth: '1px',
@@ -109,10 +112,10 @@ const SchemaFieldRow: React.FC<{
                             borderColor: borderColor,
                             color: textColor,
                             backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='${isHealthMode ? '%23064e3b' : '%239ca3af'}' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                            backgroundPosition: 'right 0.5rem center',
+                            backgroundPosition: 'right 0.3rem center',
                             backgroundRepeat: 'no-repeat',
-                            backgroundSize: '1.5em 1.5em',
-                            paddingRight: '2.5rem',
+                            backgroundSize: '1.2em 1.2em',
+                            paddingRight: '2rem',
                         }}
                     >
                         {fieldTypes.map(type => (
@@ -121,22 +124,23 @@ const SchemaFieldRow: React.FC<{
                     </select>
                     <button
                         onClick={() => onRemove(path)}
-                        className="p-2 transition-colors disabled:opacity-50"
+                        className="p-1.5 rounded transition-colors disabled:opacity-50 hover:bg-opacity-80"
                         style={{
-                            color: isHealthMode ? '#6b7280' : '#94a3b8'
+                            color: isHealthMode ? '#ef4444' : '#f87171',
+                            backgroundColor: isHealthMode ? '#fee2e2' : 'rgba(239, 68, 68, 0.1)'
                         }}
                         disabled={isRoot && schemaLength <= 1}
                         aria-label="Eliminar campo"
                     >
-                        <TrashIcon className="w-5 h-5" />
+                        <TrashIcon className="w-4 h-4" />
                     </button>
                 </div>
             </div>
-            {field.error && <p className="text-sm text-red-400 px-1">{field.error}</p>}
-            
+            {field.error && <p className="text-xs text-red-400 px-1">{field.error}</p>}
+
             {isNestedType && field.children && (
                 <div
-                    className="ml-6 pl-4 border-l-2 space-y-4 pt-2"
+                    className="ml-4 pl-3 border-l-2 space-y-2 pt-1"
                     style={{ borderLeftColor: isHealthMode ? '#a7f3d0' : '#475569' }}
                 >
                     {field.children.map(childField => (
@@ -155,14 +159,14 @@ const SchemaFieldRow: React.FC<{
                     ))}
                      <button
                         onClick={() => onAddChild(path)}
-                        className="flex items-center gap-2 font-medium py-1 px-2 rounded-md transition-colors text-xs"
+                        className="flex items-center gap-1.5 font-medium py-1 px-2 rounded transition-colors text-xs hover:opacity-80"
                         style={{
                             color: accentColor,
                             backgroundColor: isHealthMode ? '#d1fae5' : 'rgba(51, 65, 85, 0.5)'
                         }}
                     >
-                        <PlusIcon className="w-4 h-4" />
-                        Añadir Sub-Campo
+                        <PlusIcon className="w-3.5 h-3.5" />
+                        Sub-Campo
                     </button>
                 </div>
             )}
@@ -206,7 +210,7 @@ export const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ schema, setSchema,
 
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {schema.map(field => (
         <SchemaFieldRow
             key={field.id}
@@ -223,7 +227,7 @@ export const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ schema, setSchema,
       ))}
       <button
         onClick={addRootField}
-        className="flex items-center gap-2 font-medium py-2 px-3 rounded-md transition-colors text-sm"
+        className="flex items-center gap-1.5 font-medium py-1.5 px-3 rounded transition-colors text-sm hover:opacity-80"
         style={{
           color: accentColor,
           backgroundColor: isHealthMode ? '#d1fae5' : 'rgba(51, 65, 85, 0.5)'

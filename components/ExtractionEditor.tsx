@@ -51,6 +51,7 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
     const [isSearchingImage, setIsSearchingImage] = useState(false);
     const [imageSearchResult, setImageSearchResult] = useState<any>(null);
     const [showImageSearch, setShowImageSearch] = useState(false);
+    const [showPrompt, setShowPrompt] = useState(false); // Prompt colapsado por defecto
 
     const cardBg = isHealthMode ? '#ffffff' : 'rgba(30, 41, 59, 0.5)';
     const borderColor = isHealthMode ? theme?.border || '#6ee7b7' : 'rgba(51, 65, 85, 0.5)';
@@ -153,39 +154,63 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
             </div>
 
             <div className="flex-grow p-4 md:p-6 overflow-y-auto space-y-6">
+                {/* Prompt colapsable */}
                 <div>
-                    <div className="flex justify-between items-center mb-2">
-                        <label htmlFor="prompt" className="block text-base font-medium" style={{ color: textColor }}>
+                    <button
+                        onClick={() => setShowPrompt(!showPrompt)}
+                        className="flex items-center justify-between w-full text-left mb-2"
+                    >
+                        <label className="text-base font-medium flex items-center gap-2 cursor-pointer" style={{ color: textColor }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" style={{ color: accentColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
                             1. Prompt (Instrucción)
                         </label>
-                         <button
-                            onClick={useExample}
-                            className="text-sm hover:opacity-80 transition-all flex items-center gap-1"
-                            style={{ color: accentColor }}
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`h-5 w-5 transition-transform ${showPrompt ? 'rotate-180' : ''}`}
+                            style={{ color: textSecondary }}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
                         >
-                            <SparklesIcon className="w-4 h-4" />
-                            Usar Ejemplo
-                        </button>
-                    </div>
-                    <textarea
-                        id="prompt"
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                        rows={4}
-                        className="w-full rounded-md p-3 focus:ring-2 focus:outline-none transition-all text-sm"
-                        style={{
-                            backgroundColor: isHealthMode ? '#f9fafb' : '#0f172a',
-                            borderWidth: '1px',
-                            borderStyle: 'solid',
-                            borderColor: isHealthMode ? '#d1d5db' : '#475569',
-                            color: textColor
-                        }}
-                        placeholder="Ej: Extrae los detalles de la factura del documento."
-                    />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    {showPrompt && (
+                        <>
+                            <div className="flex justify-end mb-2">
+                                <button
+                                    onClick={useExample}
+                                    className="text-sm hover:opacity-80 transition-all flex items-center gap-1"
+                                    style={{ color: accentColor }}
+                                >
+                                    <SparklesIcon className="w-4 h-4" />
+                                    Usar Ejemplo
+                                </button>
+                            </div>
+                            <textarea
+                                id="prompt"
+                                value={prompt}
+                                onChange={(e) => setPrompt(e.target.value)}
+                                rows={4}
+                                className="w-full rounded-md p-3 focus:ring-2 focus:outline-none transition-all text-sm"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#f9fafb' : '#0f172a',
+                                    borderWidth: '1px',
+                                    borderStyle: 'solid',
+                                    borderColor: isHealthMode ? '#d1d5db' : '#475569',
+                                    color: textColor
+                                }}
+                                placeholder="Ej: Extrae los detalles de la factura del documento."
+                            />
+                        </>
+                    )}
                 </div>
 
                 <div>
-                    <h3 className="text-base font-medium mb-2" style={{ color: textColor }}>2. Definición del Esquema JSON</h3>
+                    <h3 className="text-base font-medium mb-3" style={{ color: textColor }}>2. Definición del Esquema JSON</h3>
                     {template && 'secciones' in template ? (
                         <HealthSchemaViewer template={template} onUpdate={onUpdateTemplate} theme={theme} isHealthMode={isHealthMode} />
                     ) : (
