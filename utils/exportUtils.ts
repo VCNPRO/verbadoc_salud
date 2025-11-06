@@ -65,11 +65,20 @@ export const jsonToPDF = (data: object | object[], filename: string, schema?: Sc
             } else if (Array.isArray(obj[key])) {
                 // Verificar si es un array de objetos
                 if (obj[key].length > 0 && typeof obj[key][0] === 'object' && obj[key][0] !== null) {
-                    // Array de objetos: formatear cada objeto de forma legible (PDF usa ; como separador)
-                    acc[prefixedKey] = obj[key].map((item: any, index: number) => {
-                        const pairs = Object.entries(item).map(([k, v]) => `${k}: ${v}`);
-                        return `[${index + 1}] ${pairs.join(', ')}`;
-                    }).join('; ');
+                    // Array de objetos: agrupar por propiedad (PDF usa ; como separador)
+                    const allProps = new Set<string>();
+                    obj[key].forEach((item: any) => {
+                        Object.keys(item).forEach(prop => allProps.add(prop));
+                    });
+
+                    allProps.forEach(prop => {
+                        const values = obj[key].map((item: any, index: number) => {
+                            const value = item[prop];
+                            return value !== undefined && value !== null ? `[${index + 1}] ${value}` : '';
+                        }).filter(v => v !== '');
+
+                        acc[`${prefixedKey}.${prop}`] = values.join('; ');
+                    });
                 } else {
                     // Array de primitivos: usar punto y coma
                     acc[prefixedKey] = obj[key].join('; ');
@@ -170,11 +179,20 @@ export const jsonToCSV = (data: object | object[], schema?: SchemaField[]): stri
             } else if (Array.isArray(obj[key])) {
                 // Verificar si es un array de objetos
                 if (obj[key].length > 0 && typeof obj[key][0] === 'object' && obj[key][0] !== null) {
-                    // Array de objetos: formatear cada objeto de forma legible (CSV usa ; como separador)
-                    acc[prefixedKey] = obj[key].map((item: any, index: number) => {
-                        const pairs = Object.entries(item).map(([k, v]) => `${k}: ${v}`);
-                        return `[${index + 1}] ${pairs.join(', ')}`;
-                    }).join('; ');
+                    // Array de objetos: agrupar por propiedad (CSV usa ; como separador)
+                    const allProps = new Set<string>();
+                    obj[key].forEach((item: any) => {
+                        Object.keys(item).forEach(prop => allProps.add(prop));
+                    });
+
+                    allProps.forEach(prop => {
+                        const values = obj[key].map((item: any, index: number) => {
+                            const value = item[prop];
+                            return value !== undefined && value !== null ? `[${index + 1}] ${value}` : '';
+                        }).filter(v => v !== '');
+
+                        acc[`${prefixedKey}.${prop}`] = values.join('; ');
+                    });
                 } else {
                     // Array de primitivos: usar punto y coma
                     acc[prefixedKey] = obj[key].join('; ');
@@ -259,11 +277,22 @@ export const jsonToExcel = (data: object | object[], schema?: SchemaField[]): Bl
             } else if (Array.isArray(obj[key])) {
                 // Verificar si es un array de objetos
                 if (obj[key].length > 0 && typeof obj[key][0] === 'object' && obj[key][0] !== null) {
-                    // Array de objetos: formatear cada objeto de forma legible
-                    acc[prefixedKey] = obj[key].map((item: any, index: number) => {
-                        const lines = Object.entries(item).map(([k, v]) => `${k}: ${v}`);
-                        return `[${index + 1}]\n${lines.join('\n')}`;
-                    }).join('\n\n---\n\n');
+                    // Array de objetos: agrupar por propiedad
+                    // Obtener todas las propiedades únicas del array de objetos
+                    const allProps = new Set<string>();
+                    obj[key].forEach((item: any) => {
+                        Object.keys(item).forEach(prop => allProps.add(prop));
+                    });
+
+                    // Para cada propiedad, crear una columna con todos los valores
+                    allProps.forEach(prop => {
+                        const values = obj[key].map((item: any, index: number) => {
+                            const value = item[prop];
+                            return value !== undefined && value !== null ? `[${index + 1}] ${value}` : '';
+                        }).filter(v => v !== '');
+
+                        acc[`${prefixedKey}.${prop}`] = values.join('\n\n---\n\n');
+                    });
                 } else {
                     // Array de primitivos: usar saltos de línea
                     acc[prefixedKey] = obj[key].join('\n');
