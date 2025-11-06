@@ -1,6 +1,7 @@
 // Utilidades para exportar datos a diferentes formatos
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import type { SchemaField } from '../types.ts';
 
 /**
@@ -215,13 +216,18 @@ export const downloadCSV = (data: object | object[], filename: string, schema?: 
 };
 
 /**
- * Convierte un objeto JSON a Excel (formato HTML que Excel puede abrir)
+ * Convierte un objeto JSON a Excel usando la librería xlsx (genera archivo .xlsx real)
  */
-export const jsonToExcel = (data: object | object[], schema?: SchemaField[]): string => {
+export const jsonToExcel = (data: object | object[], schema?: SchemaField[]): Blob => {
     const dataArray = Array.isArray(data) ? data : [data];
 
     if (dataArray.length === 0) {
-        return '';
+        // Crear libro vacío
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([['No hay datos']]);
+        XLSX.utils.book_append_sheet(wb, ws, 'Datos Extraídos');
+        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     }
 
     // Función para aplanar objetos anidados
@@ -254,62 +260,54 @@ export const jsonToExcel = (data: object | object[], schema?: SchemaField[]): st
         );
     }
 
-    // Crear tabla HTML para Excel
-    let html = `
-        <html xmlns:x="urn:schemas-microsoft-com:office:excel">
-        <head>
-            <meta charset="UTF-8">
-            <xml>
-                <x:ExcelWorkbook>
-                    <x:ExcelWorksheets>
-                        <x:ExcelWorksheet>
-                            <x:Name>Datos Extraídos</x:Name>
-                            <x:WorksheetOptions>
-                                <x:DisplayGridlines/>
-                            </x:WorksheetOptions>
-                        </x:ExcelWorksheet>
-                    </x:ExcelWorksheets>
-                </x:ExcelWorkbook>
-            </xml>
-        </head>
-        <body>
-            <table border="1">
-                <thead>
-                    <tr>
-                        ${allColumns.map(col => `<th style="background-color: #4472C4; color: white; font-weight: bold; padding: 8px;">${col}</th>`).join('')}
-                    </tr>
-                </thead>
-                <tbody>
-                    ${flattenedData.map(item => `
-                        <tr>
-                            ${allColumns.map(col => `<td style="padding: 6px; white-space: pre-wrap; vertical-align: top;">${item[col] ?? ''}</td>`).join('')}
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </body>
-        </html>
-    `;
+    // Crear array de arrays para xlsx (mantiene orden)
+    const worksheetData = [
+        allColumns, // Headers
+        ...flattenedData.map(item =>
+            allColumns.map(col => item[col] ?? '')
+        )
+    ];
 
-    return html;
+    // Crear libro y hoja de trabajo
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+    // Configurar ancho de columnas (auto-ajustar)
+    const colWidths = allColumns.map(col => ({
+        wch: Math.max(col.length, 15) // Mínimo 15 caracteres
+    }));
+    ws['!cols'] = colWidths;
+
+    // Agregar hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Datos Extraídos');
+
+    // Generar archivo Excel como buffer
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+    // Retornar como Blob
+    return new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
 };
 
 /**
- * Descarga un archivo Excel
+ * Descarga un archivo Excel (.xlsx real)
  */
 export const downloadExcel = (data: object | object[], filename: string, schema?: SchemaField[]) => {
-    const html = jsonToExcel(data, schema);
-    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+    const blob = jsonToExcel(data, schema);
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
 
     link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}.xls`);
+    link.setAttribute('download', `${filename}.xlsx`);
     link.style.visibility = 'hidden';
 
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    // Limpiar URL después de la descarga
+    setTimeout(() => URL.revokeObjectURL(url), 100);
 };
 
 /**
