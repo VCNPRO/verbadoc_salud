@@ -108,7 +108,7 @@ const getGenAI = () => {
     return ai;
 }
 
-export type GeminiModel = 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gemini-2.5-pro' | 'gemini-1.5-flash' | 'gemini-1.5-pro';
+export type GeminiModel = 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gemini-2.5-pro';
 
 export interface ModelInfo {
     id: GeminiModel;
@@ -139,12 +139,6 @@ export const AVAILABLE_MODELS: ModelInfo[] = [
         description: 'Modelo avanzado con mejor precisión',
         bestFor: 'Documentos complejos, múltiples tablas, análisis profundo',
         costPerDoc: '~$0.008/doc'
-    },
-    {
-        id: 'gemini-1.5-flash',
-        name: 'Flash 1.5 (Legacy)',
-        description: 'Versión anterior del modelo rápido',
-        bestFor: 'Compatibilidad con versiones anteriores'
     }
 ];
 
