@@ -120,6 +120,30 @@ function App() {
         }
     }, []);
 
+    // Cargar historial desde localStorage al iniciar
+    useEffect(() => {
+        try {
+            const savedHistory = localStorage.getItem('verbadoc-history');
+            if (savedHistory) {
+                const parsed = JSON.parse(savedHistory);
+                setHistory(parsed);
+                console.log('✅ Historial cargado desde localStorage:', parsed.length, 'extracciones');
+            }
+        } catch (error) {
+            console.error('Error al cargar historial desde localStorage:', error);
+        }
+    }, []);
+
+    // Guardar historial en localStorage cada vez que cambie
+    useEffect(() => {
+        try {
+            localStorage.setItem('verbadoc-history', JSON.stringify(history));
+            console.log('💾 Historial guardado en localStorage:', history.length, 'extracciones');
+        } catch (error) {
+            console.error('Error al guardar historial en localStorage:', error);
+        }
+    }, [history]);
+
     const activeFile = useMemo(() => files.find(f => f.id === activeFileId), [files, activeFileId]);
 
     const handleFileSelect = (id: string | null) => {
@@ -296,6 +320,64 @@ function App() {
             }
         }
         setSelectedTemplate(newTemplate);
+    };
+
+    // Limpiar todo el historial
+    const handleClearHistory = () => {
+        if (confirm('¿Estás seguro de que deseas eliminar todo el historial? Esta acción no se puede deshacer.')) {
+            setHistory([]);
+            localStorage.removeItem('verbadoc-history');
+            console.log('🗑️ Historial limpiado');
+        }
+    };
+
+    // Exportar historial como JSON
+    const handleExportHistory = () => {
+        if (history.length === 0) {
+            alert('No hay historial para exportar');
+            return;
+        }
+
+        const dataStr = JSON.stringify(history, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `verbadoc-historial-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+        console.log('📥 Historial exportado');
+    };
+
+    // Importar historial desde JSON
+    const handleImportHistory = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = (e: any) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const imported = JSON.parse(event.target?.result as string);
+                    if (Array.isArray(imported)) {
+                        if (confirm(`¿Importar ${imported.length} extracciones? Esto se añadirá al historial existente.`)) {
+                            setHistory(currentHistory => [...imported, ...currentHistory]);
+                            console.log('📤 Historial importado:', imported.length, 'extracciones');
+                        }
+                    } else {
+                        alert('El archivo no contiene un historial válido');
+                    }
+                } catch (error) {
+                    alert('Error al leer el archivo. Asegúrate de que sea un JSON válido.');
+                    console.error('Error al importar historial:', error);
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
     };
 
     return (
@@ -530,6 +612,9 @@ function App() {
                                 results={history}
                                 theme={currentTheme}
                                 isHealthMode={isHealthMode}
+                                onClearHistory={handleClearHistory}
+                                onExportHistory={handleExportHistory}
+                                onImportHistory={handleImportHistory}
                             />
                         </div>
                     </div>
