@@ -254,6 +254,7 @@ export const downloadCSV = (data: object | object[], filename: string, schema?: 
 
 /**
  * Convierte un objeto JSON a Excel usando la librería xlsx (genera archivo .xlsx real)
+ * Arrays de objetos se expanden como múltiples filas
  */
 export const jsonToExcel = (data: object | object[], schema?: SchemaField[]): Blob => {
     const dataArray = Array.isArray(data) ? data : [data];
@@ -267,45 +268,69 @@ export const jsonToExcel = (data: object | object[], schema?: SchemaField[]): Bl
         return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     }
 
-    // Función para aplanar objetos anidados
-    const flattenObject = (obj: any, prefix = ''): any => {
-        return Object.keys(obj).reduce((acc: any, key: string) => {
-            const prefixedKey = prefix ? `${prefix}.${key}` : key;
+    // Función para expandir arrays de objetos en múltiples filas
+    const expandArrays = (obj: any, prefix = ''): any[] => {
+        // Primero, identificar el array de objetos más largo
+        let maxArrayLength = 1;
+        const arrayFields: { [key: string]: any[] } = {};
+        const scalarFields: { [key: string]: any } = {};
 
-            if (obj[key] !== null && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-                Object.assign(acc, flattenObject(obj[key], prefixedKey));
-            } else if (Array.isArray(obj[key])) {
-                // Verificar si es un array de objetos
-                if (obj[key].length > 0 && typeof obj[key][0] === 'object' && obj[key][0] !== null) {
-                    // Array de objetos: agrupar por propiedad
-                    // Obtener todas las propiedades únicas del array de objetos
-                    const allProps = new Set<string>();
-                    obj[key].forEach((item: any) => {
-                        Object.keys(item).forEach(prop => allProps.add(prop));
-                    });
+        const processObject = (o: any, p = '') => {
+            Object.keys(o).forEach(key => {
+                const prefixedKey = p ? `${p}.${key}` : key;
+                const value = o[key];
 
-                    // Para cada propiedad, crear una columna con todos los valores
-                    allProps.forEach(prop => {
-                        const values = obj[key].map((item: any, index: number) => {
-                            const value = item[prop];
-                            return value !== undefined && value !== null ? `[${index + 1}] ${value}` : '';
-                        }).filter(v => v !== '');
+                if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+                    // Objeto anidado: procesar recursivamente
+                    processObject(value, prefixedKey);
+                } else if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object' && value[0] !== null) {
+                    // Array de objetos: guardar para expandir
+                    arrayFields[prefixedKey] = value;
+                    maxArrayLength = Math.max(maxArrayLength, value.length);
+                } else if (Array.isArray(value)) {
+                    // Array de primitivos: unir
+                    scalarFields[prefixedKey] = value.join('\n');
+                } else {
+                    // Campo escalar
+                    scalarFields[prefixedKey] = value;
+                }
+            });
+        };
 
-                        acc[`${prefixedKey}.${prop}`] = values.join('\n\n---\n\n');
+        processObject(obj);
+
+        // Generar filas
+        const rows: any[] = [];
+        for (let i = 0; i < maxArrayLength; i++) {
+            const row: any = { ...scalarFields };
+
+            // Para cada array de objetos, tomar el elemento en la posición i
+            Object.entries(arrayFields).forEach(([arrayKey, arrayValue]) => {
+                const item = arrayValue[i];
+                if (item) {
+                    // Expandir propiedades del objeto
+                    Object.entries(item).forEach(([propKey, propValue]) => {
+                        row[`${arrayKey}.${propKey}`] = propValue;
                     });
                 } else {
-                    // Array de primitivos: usar saltos de línea
-                    acc[prefixedKey] = obj[key].join('\n');
+                    // Si este array es más corto, dejar vacío
+                    // Obtener propiedades del primer elemento para saber qué columnas crear
+                    if (arrayValue[0]) {
+                        Object.keys(arrayValue[0]).forEach(propKey => {
+                            row[`${arrayKey}.${propKey}`] = '';
+                        });
+                    }
                 }
-            } else {
-                acc[prefixedKey] = obj[key];
-            }
+            });
 
-            return acc;
-        }, {});
+            rows.push(row);
+        }
+
+        return rows;
     };
 
-    const flattenedData = dataArray.map(item => flattenObject(item));
+    // Expandir cada objeto a múltiples filas si tiene arrays
+    const allRows = dataArray.flatMap(item => expandArrays(item));
 
     // Si tenemos schema, usar su orden; si no, extraer de los datos
     let allColumns: string[];
@@ -313,15 +338,15 @@ export const jsonToExcel = (data: object | object[], schema?: SchemaField[]): Bl
         allColumns = getFieldOrderFromSchema(schema);
     } else {
         allColumns = Array.from(
-            new Set(flattenedData.flatMap(item => Object.keys(item)))
+            new Set(allRows.flatMap(row => Object.keys(row)))
         );
     }
 
     // Crear array de arrays para xlsx (mantiene orden)
     const worksheetData = [
         allColumns, // Headers
-        ...flattenedData.map(item =>
-            allColumns.map(col => item[col] ?? '')
+        ...allRows.map(row =>
+            allColumns.map(col => row[col] ?? '')
         )
     ];
 
