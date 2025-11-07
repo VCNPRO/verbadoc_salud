@@ -96,18 +96,6 @@ const convertSchemaToVertexAI = (schema: SchemaField[]): VertexAISchema => {
     };
 };
 
-// Configuración (no se usa API key en el navegador, se usa en el backend)
-let currentApiKey: string | null = null;
-
-export const setApiKey = (apiKey: string) => {
-    currentApiKey = apiKey;
-    console.log('🔑 API Key configurada (se usa en backend Vercel)');
-};
-
-export const getApiKey = (): string | null => {
-    return currentApiKey;
-};
-
 export type GeminiModel = 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gemini-2.5-pro';
 
 export interface ModelInfo {
