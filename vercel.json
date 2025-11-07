@@ -1,0 +1,9 @@
+{
+  "regions": ["fra1", "ams1"],
+  "build": {
+    "env": {
+      "VITE_GEMINI_PROJECT_ID": "@verbadoc-project-id",
+      "VITE_GEMINI_LOCATION": "europe-west1"
+    }
+  }
+}

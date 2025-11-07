@@ -1,11 +1,42 @@
 // Utilidades para exportar datos a diferentes formatos
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import type { SchemaField } from '../types.ts';
+
+/**
+ * Extrae el orden de campos del schema de forma recursiva
+ */
+const getFieldOrderFromSchema = (schema: SchemaField[], prefix = ''): string[] => {
+    const fields: string[] = [];
+
+    for (const field of schema) {
+        const fieldName = prefix ? `${prefix}.${field.name}` : field.name;
+
+        // Si es un objeto con hijos, procesar recursivamente
+        if (field.type === 'OBJECT' && field.children) {
+            fields.push(...getFieldOrderFromSchema(field.children, fieldName));
+        }
+        // Si es ARRAY_OF_OBJECTS con hijos, agregar el campo base y sus propiedades
+        else if (field.type === 'ARRAY_OF_OBJECTS' && field.children) {
+            // Agregar las propiedades del objeto dentro del array
+            for (const child of field.children) {
+                fields.push(`${fieldName}.${child.name}`);
+            }
+        }
+        // Campo simple
+        else {
+            fields.push(fieldName);
+        }
+    }
+
+    return fields;
+};
 
 /**
  * Convierte un objeto JSON a PDF y retorna el blob
  */
-export const jsonToPDF = (data: object | object[], filename: string): Blob => {
+export const jsonToPDF = (data: object | object[], filename: string, schema?: SchemaField[]): Blob => {
     const pdf = new jsPDF();
     const dataArray = Array.isArray(data) ? data : [data];
 
@@ -32,7 +63,26 @@ export const jsonToPDF = (data: object | object[], filename: string): Blob => {
             if (obj[key] !== null && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
                 Object.assign(acc, flattenObject(obj[key], prefixedKey));
             } else if (Array.isArray(obj[key])) {
-                acc[prefixedKey] = obj[key].join('; ');
+                // Verificar si es un array de objetos
+                if (obj[key].length > 0 && typeof obj[key][0] === 'object' && obj[key][0] !== null) {
+                    // Array de objetos: agrupar por propiedad (PDF usa ; como separador)
+                    const allProps = new Set<string>();
+                    obj[key].forEach((item: any) => {
+                        Object.keys(item).forEach(prop => allProps.add(prop));
+                    });
+
+                    allProps.forEach(prop => {
+                        const values = obj[key].map((item: any, index: number) => {
+                            const value = item[prop];
+                            return value !== undefined && value !== null ? `[${index + 1}] ${value}` : '';
+                        }).filter(v => v !== '');
+
+                        acc[`${prefixedKey}.${prop}`] = values.join('; ');
+                    });
+                } else {
+                    // Array de primitivos: usar punto y coma
+                    acc[prefixedKey] = obj[key].join('; ');
+                }
             } else {
                 acc[prefixedKey] = obj[key];
             }
@@ -42,9 +92,16 @@ export const jsonToPDF = (data: object | object[], filename: string): Blob => {
     };
 
     const flattenedData = dataArray.map(item => flattenObject(item));
-    const allColumns = Array.from(
-        new Set(flattenedData.flatMap(item => Object.keys(item)))
-    );
+
+    // Si tenemos schema, usar su orden; si no, extraer de los datos
+    let allColumns: string[];
+    if (schema && schema.length > 0) {
+        allColumns = getFieldOrderFromSchema(schema);
+    } else {
+        allColumns = Array.from(
+            new Set(flattenedData.flatMap(item => Object.keys(item)))
+        );
+    }
 
     // Preparar datos para la tabla
     const tableData = flattenedData.map(item =>
@@ -79,8 +136,8 @@ export const jsonToPDF = (data: object | object[], filename: string): Blob => {
 /**
  * Descarga un archivo PDF
  */
-export const downloadPDF = (data: object | object[], filename: string) => {
-    const blob = jsonToPDF(data, filename);
+export const downloadPDF = (data: object | object[], filename: string, schema?: SchemaField[]) => {
+    const blob = jsonToPDF(data, filename, schema);
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
 
@@ -96,15 +153,15 @@ export const downloadPDF = (data: object | object[], filename: string) => {
 /**
  * Genera una URL de objeto para mostrar el PDF en un iframe
  */
-export const generatePDFPreviewURL = (data: object | object[], filename: string): string => {
-    const blob = jsonToPDF(data, filename);
+export const generatePDFPreviewURL = (data: object | object[], filename: string, schema?: SchemaField[]): string => {
+    const blob = jsonToPDF(data, filename, schema);
     return URL.createObjectURL(blob);
 };
 
 /**
  * Convierte un objeto JSON a CSV
  */
-export const jsonToCSV = (data: object | object[]): string => {
+export const jsonToCSV = (data: object | object[], schema?: SchemaField[]): string => {
     // Si es un solo objeto, convertirlo a array
     const dataArray = Array.isArray(data) ? data : [data];
 
@@ -120,8 +177,26 @@ export const jsonToCSV = (data: object | object[]): string => {
             if (obj[key] !== null && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
                 Object.assign(acc, flattenObject(obj[key], prefixedKey));
             } else if (Array.isArray(obj[key])) {
-                // Convertir arrays a string separado por punto y coma
-                acc[prefixedKey] = obj[key].join('; ');
+                // Verificar si es un array de objetos
+                if (obj[key].length > 0 && typeof obj[key][0] === 'object' && obj[key][0] !== null) {
+                    // Array de objetos: agrupar por propiedad (CSV usa ; como separador)
+                    const allProps = new Set<string>();
+                    obj[key].forEach((item: any) => {
+                        Object.keys(item).forEach(prop => allProps.add(prop));
+                    });
+
+                    allProps.forEach(prop => {
+                        const values = obj[key].map((item: any, index: number) => {
+                            const value = item[prop];
+                            return value !== undefined && value !== null ? `[${index + 1}] ${value}` : '';
+                        }).filter(v => v !== '');
+
+                        acc[`${prefixedKey}.${prop}`] = values.join('; ');
+                    });
+                } else {
+                    // Array de primitivos: usar punto y coma
+                    acc[prefixedKey] = obj[key].join('; ');
+                }
             } else {
                 acc[prefixedKey] = obj[key];
             }
@@ -133,10 +208,15 @@ export const jsonToCSV = (data: object | object[]): string => {
     // Aplanar todos los objetos
     const flattenedData = dataArray.map(item => flattenObject(item));
 
-    // Obtener todas las columnas únicas
-    const allColumns = Array.from(
-        new Set(flattenedData.flatMap(item => Object.keys(item)))
-    );
+    // Si tenemos schema, usar su orden; si no, extraer de los datos
+    let allColumns: string[];
+    if (schema && schema.length > 0) {
+        allColumns = getFieldOrderFromSchema(schema);
+    } else {
+        allColumns = Array.from(
+            new Set(flattenedData.flatMap(item => Object.keys(item)))
+        );
+    }
 
     // Crear encabezados CSV
     const headers = allColumns.map(col => `"${col}"`).join(',');
@@ -157,8 +237,8 @@ export const jsonToCSV = (data: object | object[]): string => {
 /**
  * Descarga un archivo CSV
  */
-export const downloadCSV = (data: object | object[], filename: string) => {
-    const csv = jsonToCSV(data);
+export const downloadCSV = (data: object | object[], filename: string, schema?: SchemaField[]) => {
+    const csv = jsonToCSV(data, schema);
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -173,93 +253,143 @@ export const downloadCSV = (data: object | object[], filename: string) => {
 };
 
 /**
- * Convierte un objeto JSON a Excel (formato HTML que Excel puede abrir)
+ * Convierte un objeto JSON a Excel usando la librería xlsx (genera archivo .xlsx real)
+ * Arrays de objetos se expanden como múltiples filas
  */
-export const jsonToExcel = (data: object | object[]): string => {
+export const jsonToExcel = (data: object | object[], schema?: SchemaField[]): Blob => {
     const dataArray = Array.isArray(data) ? data : [data];
 
     if (dataArray.length === 0) {
-        return '';
+        // Crear libro vacío
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([['No hay datos']]);
+        XLSX.utils.book_append_sheet(wb, ws, 'Datos Extraídos');
+        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     }
 
-    // Función para aplanar objetos anidados
-    const flattenObject = (obj: any, prefix = ''): any => {
-        return Object.keys(obj).reduce((acc: any, key: string) => {
-            const prefixedKey = prefix ? `${prefix}.${key}` : key;
+    // Función para expandir arrays de objetos en múltiples filas
+    const expandArrays = (obj: any, prefix = ''): any[] => {
+        // Primero, identificar el array de objetos más largo
+        let maxArrayLength = 1;
+        const arrayFields: { [key: string]: any[] } = {};
+        const scalarFields: { [key: string]: any } = {};
 
-            if (obj[key] !== null && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-                Object.assign(acc, flattenObject(obj[key], prefixedKey));
-            } else if (Array.isArray(obj[key])) {
-                acc[prefixedKey] = obj[key].join('; ');
-            } else {
-                acc[prefixedKey] = obj[key];
-            }
+        const processObject = (o: any, p = '') => {
+            Object.keys(o).forEach(key => {
+                const prefixedKey = p ? `${p}.${key}` : key;
+                const value = o[key];
 
-            return acc;
-        }, {});
+                if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+                    // Objeto anidado: procesar recursivamente
+                    processObject(value, prefixedKey);
+                } else if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object' && value[0] !== null) {
+                    // Array de objetos: guardar para expandir
+                    arrayFields[prefixedKey] = value;
+                    maxArrayLength = Math.max(maxArrayLength, value.length);
+                } else if (Array.isArray(value)) {
+                    // Array de primitivos: unir
+                    scalarFields[prefixedKey] = value.join('\n');
+                } else {
+                    // Campo escalar
+                    scalarFields[prefixedKey] = value;
+                }
+            });
+        };
+
+        processObject(obj);
+
+        // Generar filas
+        const rows: any[] = [];
+        for (let i = 0; i < maxArrayLength; i++) {
+            const row: any = { ...scalarFields };
+
+            // Para cada array de objetos, tomar el elemento en la posición i
+            Object.entries(arrayFields).forEach(([arrayKey, arrayValue]) => {
+                const item = arrayValue[i];
+                if (item) {
+                    // Expandir propiedades del objeto
+                    Object.entries(item).forEach(([propKey, propValue]) => {
+                        row[`${arrayKey}.${propKey}`] = propValue;
+                    });
+                } else {
+                    // Si este array es más corto, dejar vacío
+                    // Obtener propiedades del primer elemento para saber qué columnas crear
+                    if (arrayValue[0]) {
+                        Object.keys(arrayValue[0]).forEach(propKey => {
+                            row[`${arrayKey}.${propKey}`] = '';
+                        });
+                    }
+                }
+            });
+
+            rows.push(row);
+        }
+
+        return rows;
     };
 
-    const flattenedData = dataArray.map(item => flattenObject(item));
-    const allColumns = Array.from(
-        new Set(flattenedData.flatMap(item => Object.keys(item)))
-    );
+    // Expandir cada objeto a múltiples filas si tiene arrays
+    const allRows = dataArray.flatMap(item => expandArrays(item));
 
-    // Crear tabla HTML para Excel
-    let html = `
-        <html xmlns:x="urn:schemas-microsoft-com:office:excel">
-        <head>
-            <meta charset="UTF-8">
-            <xml>
-                <x:ExcelWorkbook>
-                    <x:ExcelWorksheets>
-                        <x:ExcelWorksheet>
-                            <x:Name>Datos Extraídos</x:Name>
-                            <x:WorksheetOptions>
-                                <x:DisplayGridlines/>
-                            </x:WorksheetOptions>
-                        </x:ExcelWorksheet>
-                    </x:ExcelWorksheets>
-                </x:ExcelWorkbook>
-            </xml>
-        </head>
-        <body>
-            <table border="1">
-                <thead>
-                    <tr>
-                        ${allColumns.map(col => `<th style="background-color: #4472C4; color: white; font-weight: bold; padding: 8px;">${col}</th>`).join('')}
-                    </tr>
-                </thead>
-                <tbody>
-                    ${flattenedData.map(item => `
-                        <tr>
-                            ${allColumns.map(col => `<td style="padding: 6px;">${item[col] ?? ''}</td>`).join('')}
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </body>
-        </html>
-    `;
+    // Si tenemos schema, usar su orden; si no, extraer de los datos
+    let allColumns: string[];
+    if (schema && schema.length > 0) {
+        allColumns = getFieldOrderFromSchema(schema);
+    } else {
+        allColumns = Array.from(
+            new Set(allRows.flatMap(row => Object.keys(row)))
+        );
+    }
 
-    return html;
+    // Crear array de arrays para xlsx (mantiene orden)
+    const worksheetData = [
+        allColumns, // Headers
+        ...allRows.map(row =>
+            allColumns.map(col => row[col] ?? '')
+        )
+    ];
+
+    // Crear libro y hoja de trabajo
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+    // Configurar ancho de columnas (auto-ajustar)
+    const colWidths = allColumns.map(col => ({
+        wch: Math.max(col.length, 15) // Mínimo 15 caracteres
+    }));
+    ws['!cols'] = colWidths;
+
+    // Agregar hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Datos Extraídos');
+
+    // Generar archivo Excel como buffer
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+    // Retornar como Blob
+    return new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
 };
 
 /**
- * Descarga un archivo Excel
+ * Descarga un archivo Excel (.xlsx real)
  */
-export const downloadExcel = (data: object | object[], filename: string) => {
-    const html = jsonToExcel(data);
-    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+export const downloadExcel = (data: object | object[], filename: string, schema?: SchemaField[]) => {
+    const blob = jsonToExcel(data, schema);
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
 
     link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}.xls`);
+    link.setAttribute('download', `${filename}.xlsx`);
     link.style.visibility = 'hidden';
 
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    // Limpiar URL después de la descarga
+    setTimeout(() => URL.revokeObjectURL(url), 100);
 };
 
 /**
