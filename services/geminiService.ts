@@ -1,9 +1,8 @@
-
-import { GoogleGenAI, GenerateContentResponse, Type } from '@google/genai';
+// Vertex AI Service - 🇪🇺 Procesamiento en Europa (Bélgica)
 // Fix: Use explicit file extension in import.
-import type { SchemaField } from '../types.ts';
+import type { SchemaField, SchemaFieldType } from '../types.ts';
 
-// This function is a helper to convert file to base64
+// Helper para convertir File a base64
 const fileToGenerativePart = async (file: File) => {
   const base64EncodedDataPromise = new Promise<string>((resolve) => {
     const reader = new FileReader();
@@ -11,7 +10,7 @@ const fileToGenerativePart = async (file: File) => {
       if (typeof reader.result === 'string') {
         resolve(reader.result.split(',')[1]);
       } else {
-        resolve(''); // Should handle ArrayBuffer case if necessary, for now empty string.
+        resolve('');
       }
     };
     reader.readAsDataURL(file);
@@ -24,9 +23,18 @@ const fileToGenerativePart = async (file: File) => {
   };
 };
 
+// Tipos para Vertex AI Schema
+type SchemaType = 'STRING' | 'NUMBER' | 'BOOLEAN' | 'ARRAY' | 'OBJECT';
 
-// Recursive function to convert our custom schema to Gemini's format
-const convertSchemaToGemini = (schema: SchemaField[]): { type: Type, properties: any, required: string[] } => {
+interface VertexAISchema {
+  type: SchemaType;
+  properties?: any;
+  required?: string[];
+  items?: any;
+}
+
+// Convertir nuestro schema a formato Vertex AI
+const convertSchemaToVertexAI = (schema: SchemaField[]): VertexAISchema => {
     const properties: { [key: string]: any } = {};
     const required: string[] = [];
 
@@ -34,44 +42,46 @@ const convertSchemaToGemini = (schema: SchemaField[]): { type: Type, properties:
         if (field.name) {
             required.push(field.name);
             let fieldSchema: any = {};
+
             switch (field.type) {
                 case 'STRING':
-                    fieldSchema.type = Type.STRING;
+                    fieldSchema.type = 'STRING';
                     break;
                 case 'NUMBER':
-                    fieldSchema.type = Type.NUMBER;
+                    fieldSchema.type = 'NUMBER';
                     break;
                 case 'BOOLEAN':
-                    fieldSchema.type = Type.BOOLEAN;
+                    fieldSchema.type = 'BOOLEAN';
                     break;
                 case 'ARRAY_OF_STRINGS':
-                    fieldSchema.type = Type.ARRAY;
-                    fieldSchema.items = { type: Type.STRING };
+                    fieldSchema.type = 'ARRAY';
+                    fieldSchema.items = { type: 'STRING' };
                     break;
                 case 'OBJECT':
                     if (field.children && field.children.length > 0) {
-                        const nestedSchema = convertSchemaToGemini(field.children);
-                        fieldSchema.type = Type.OBJECT;
+                        const nestedSchema = convertSchemaToVertexAI(field.children);
+                        fieldSchema.type = 'OBJECT';
                         fieldSchema.properties = nestedSchema.properties;
                         fieldSchema.required = nestedSchema.required;
                     } else {
-                        // Gemini requires object properties to be defined.
-                        fieldSchema.type = Type.OBJECT;
-                        fieldSchema.properties = { placeholder: { type: Type.STRING, description: "Placeholder for empty object" } };
+                        fieldSchema.type = 'OBJECT';
+                        fieldSchema.properties = { placeholder: { type: 'STRING' } };
                     }
                     break;
                 case 'ARRAY_OF_OBJECTS':
-                    fieldSchema.type = Type.ARRAY;
+                    fieldSchema.type = 'ARRAY';
                     if (field.children && field.children.length > 0) {
-                        const nestedSchema = convertSchemaToGemini(field.children);
+                        const nestedSchema = convertSchemaToVertexAI(field.children);
                         fieldSchema.items = {
-                            type: Type.OBJECT,
+                            type: 'OBJECT',
                             properties: nestedSchema.properties,
                             required: nestedSchema.required,
                         };
                     } else {
-                        // Add placeholder if empty.
-                        fieldSchema.items = { type: Type.OBJECT, properties: { placeholder: { type: Type.STRING, description: "Placeholder for empty object" } } };
+                        fieldSchema.items = {
+                            type: 'OBJECT',
+                            properties: { placeholder: { type: 'STRING' } }
+                        };
                     }
                     break;
             }
@@ -80,33 +90,23 @@ const convertSchemaToGemini = (schema: SchemaField[]): { type: Type, properties:
     });
 
     return {
-        type: Type.OBJECT,
+        type: 'OBJECT',
         properties,
         required,
     };
 };
 
-let ai: GoogleGenAI | null = null;
+// Configuración (no se usa API key en el navegador, se usa en el backend)
 let currentApiKey: string | null = null;
 
 export const setApiKey = (apiKey: string) => {
     currentApiKey = apiKey;
-    ai = null; // Reset AI instance to use new key
+    console.log('🔑 API Key configurada (se usa en backend Vercel)');
 };
 
 export const getApiKey = (): string | null => {
     return currentApiKey;
 };
-
-const getGenAI = () => {
-    if (!currentApiKey) {
-        throw new Error("An API Key must be set when running in a browser");
-    }
-    if (!ai) {
-        ai = new GoogleGenAI({ apiKey: currentApiKey });
-    }
-    return ai;
-}
 
 export type GeminiModel = 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gemini-2.5-pro';
 
@@ -121,34 +121,61 @@ export interface ModelInfo {
 export const AVAILABLE_MODELS: ModelInfo[] = [
     {
         id: 'gemini-2.5-flash-lite',
-        name: 'Flash-Lite 2.5 (Económico)',
-        description: 'Modelo más económico y rápido',
+        name: 'Flash-Lite 2.5 (Económico) 🇪🇺',
+        description: 'Modelo económico procesado en Europa (Bélgica)',
         bestFor: 'Documentos simples, formularios, recetas médicas',
         costPerDoc: '~$0.0005/doc (3× más barato)'
     },
     {
         id: 'gemini-2.5-flash',
-        name: 'Flash 2.5 (Recomendado)',
-        description: 'Modelo rápido y eficiente',
+        name: 'Flash 2.5 (Recomendado) 🇪🇺',
+        description: 'Modelo rápido procesado en Europa (Bélgica)',
         bestFor: 'Documentos médicos estándar, informes clínicos',
         costPerDoc: '~$0.0016/doc'
     },
     {
         id: 'gemini-2.5-pro',
-        name: 'Pro 2.5 (Avanzado)',
-        description: 'Modelo avanzado con mejor precisión',
+        name: 'Pro 2.5 (Avanzado) 🇪🇺',
+        description: 'Modelo avanzado procesado en Europa (Bélgica)',
         bestFor: 'Documentos complejos, múltiples tablas, análisis profundo',
         costPerDoc: '~$0.008/doc'
     }
 ];
 
-// Nueva función: Generar campos del schema automáticamente desde el prompt
+// Función auxiliar para llamar a la API de Vercel
+const callVertexAIAPI = async (endpoint: string, body: any): Promise<any> => {
+    // Determinar la URL base según el entorno
+    const baseURL = typeof window !== 'undefined'
+        ? window.location.origin
+        : process.env.VERCEL_URL
+            ? `https://${process.env.VERCEL_URL}`
+            : 'http://localhost:5173';
+
+    const url = `${baseURL}/api/${endpoint}`;
+
+    console.log(`🇪🇺 Llamando a Vertex AI Europa: ${url}`);
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(error.message || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response.json();
+};
+
+// Generar schema desde prompt
 export const generateSchemaFromPrompt = async (
     prompt: string,
     modelId: GeminiModel = 'gemini-2.5-flash'
 ): Promise<SchemaField[]> => {
-    const genAI = getGenAI();
-
     const analysisPrompt = `Analiza el siguiente prompt de extracción de datos y genera una lista de campos JSON que se necesitan extraer.
 
 Prompt del usuario:
@@ -162,30 +189,6 @@ INSTRUCCIONES:
    - children: SOLO si type es ARRAY_OF_OBJECTS, define los sub-campos del objeto
 3. Si menciona una lista o varios elementos del mismo tipo, usa ARRAY_OF_STRINGS
 4. Si menciona objetos complejos con sub-campos, usa ARRAY_OF_OBJECTS y define los children
-
-TIPOS:
-- STRING: Para texto, nombres, descripciones, fechas
-- NUMBER: Para números, cantidades, precios
-- BOOLEAN: Para sí/no, verdadero/falso
-- ARRAY_OF_STRINGS: Para listas simples
-- ARRAY_OF_OBJECTS: Para listas con estructura (ej: lista de medicamentos con nombre, dosis, frecuencia)
-
-EJEMPLOS:
-Para "lista de medicamentos con nombre y dosis":
-{
-  "name": "medicamentos",
-  "type": "ARRAY_OF_OBJECTS",
-  "children": [
-    {"name": "nombre", "type": "STRING"},
-    {"name": "dosis", "type": "STRING"}
-  ]
-}
-
-Para "nombre del paciente":
-{
-  "name": "nombre_paciente",
-  "type": "STRING"
-}
 
 Responde SOLO con un JSON con este formato:
 {
@@ -206,25 +209,28 @@ Responde SOLO con un JSON con este formato:
 }`;
 
     try {
-        const response: GenerateContentResponse = await genAI.models.generateContent({
+        const result = await callVertexAIAPI('extract', {
             model: modelId,
-            contents: { parts: [{ text: analysisPrompt }] },
+            contents: {
+                role: 'user',
+                parts: [{ text: analysisPrompt }]
+            },
             config: {
-                responseMimeType: "application/json",
+                responseMimeType: 'application/json',
             },
         });
 
-        const jsonStr = response.text.trim();
-        const result = JSON.parse(jsonStr);
+        const jsonStr = result.text.trim();
+        const parsed = JSON.parse(jsonStr);
 
-        // Recursive function to add IDs to fields
+        // Agregar IDs a los campos
         const addIdsToFields = (fields: any[], prefix: string = ''): SchemaField[] => {
             return fields.map((field: any, index: number) => {
                 const id = prefix ? `${prefix}-${index}` : `field-${Date.now()}-${index}`;
                 return {
                     id,
                     name: field.name,
-                    type: field.type,
+                    type: field.type as SchemaFieldType,
                     children: field.children && field.children.length > 0
                         ? addIdsToFields(field.children, `${id}-child`)
                         : undefined
@@ -232,32 +238,23 @@ Responde SOLO con un JSON con este formato:
             });
         };
 
-        // Convert to SchemaField format with IDs
-        const fields: SchemaField[] = addIdsToFields(result.fields);
-
-        return fields;
+        return addIdsToFields(parsed.fields);
     } catch (error) {
-        console.error("Error al generar schema desde prompt:", error);
-        throw new Error("No se pudo generar el schema automáticamente. Intenta definir los campos manualmente.");
+        console.error('Error al generar schema desde prompt:', error);
+        throw new Error('No se pudo generar el schema automáticamente. Intenta definir los campos manualmente.');
     }
 };
 
+// Extraer datos de documento
 export const extractDataFromDocument = async (
     file: File,
     schema: SchemaField[],
     prompt: string,
     modelId: GeminiModel = 'gemini-2.5-flash'
 ): Promise<object> => {
-    const genAI = getGenAI();
-    const model = modelId;
-
     const generativePart = await fileToGenerativePart(file);
 
-    const textPart = {
-        text: prompt,
-    };
-    
-    // Recursive function to filter out fields without valid names
+    // Filtrar campos válidos
     const filterValidFields = (fields: SchemaField[]): SchemaField[] => {
         return fields
             .filter(f => f.name.trim() !== '')
@@ -267,86 +264,89 @@ export const extractDataFromDocument = async (
             }));
     };
 
-    // Filter out fields without a name from the final schema (recursively)
     const validSchemaFields = filterValidFields(schema);
     if (validSchemaFields.length === 0) {
-        throw new Error("El esquema está vacío o no contiene campos con nombre válidos.");
+        throw new Error('El esquema está vacío o no contiene campos con nombre válidos.');
     }
 
-    const geminiSchema = convertSchemaToGemini(validSchemaFields);
+    const vertexAISchema = convertSchemaToVertexAI(validSchemaFields);
 
+    console.log(`📄 Procesando: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+    console.log(`🤖 Modelo: ${modelId}`);
+    console.log(`🇪🇺 Región: europe-west1 (Bélgica)`);
 
     try {
-        const response: GenerateContentResponse = await genAI.models.generateContent({
-            model: model,
-            contents: { parts: [textPart, generativePart] },
+        const result = await callVertexAIAPI('extract', {
+            model: modelId,
+            contents: {
+                role: 'user',
+                parts: [
+                    { text: prompt },
+                    generativePart
+                ]
+            },
             config: {
-                responseMimeType: "application/json",
-                responseSchema: geminiSchema,
+                responseMimeType: 'application/json',
+                responseSchema: vertexAISchema,
             },
         });
 
-        const jsonStr = response.text.trim();
+        console.log(`✅ Extracción completada`);
+        console.log(`📍 Procesado en: ${result.location || 'europe-west1'}`);
+
+        const jsonStr = result.text.trim();
         return JSON.parse(jsonStr);
     } catch (error) {
-        console.error("Error al llamar a la API de Gemini:", error);
+        console.error('Error al llamar a Vertex AI:', error);
         if (error instanceof Error) {
-            throw new Error(`Error de la API de Gemini: ${error.message}`);
+            throw new Error(`Error de Vertex AI: ${error.message}`);
         }
-        throw new Error("Ocurrió un error desconocido al comunicarse con la API de Gemini.");
+        throw new Error('Ocurrió un error desconocido al comunicarse con Vertex AI.');
     }
 };
 
-/**
- * Busca una imagen/logo de referencia en un documento
- */
+// Buscar imagen en documento
 export const searchImageInDocument = async (
     documentFile: File,
     referenceImageFile: File,
     modelId: GeminiModel = 'gemini-2.5-flash'
 ): Promise<{ found: boolean; description: string; location?: string; confidence?: string }> => {
-    const genAI = getGenAI();
-    const model = modelId;
-
     const documentPart = await fileToGenerativePart(documentFile);
     const referencePart = await fileToGenerativePart(referenceImageFile);
 
-    const prompt = {
-        text: `Analiza el documento y busca si contiene una imagen o logo similar a la imagen de referencia proporcionada.
+    const promptText = `Analiza el documento y busca si contiene una imagen o logo similar a la imagen de referencia proporcionada.
 
 Proporciona la respuesta en formato JSON con los siguientes campos:
 - found: boolean (true si se encontró una imagen similar, false si no)
 - description: string (descripción de lo que encontraste o no encontraste)
-- location: string (opcional, ubicación aproximada en el documento: "arriba izquierda", "centro", "pie de página", etc.)
-- confidence: string (opcional, nivel de confianza: "alta", "media", "baja")
-
-Sé específico en la descripción sobre las similitudes o diferencias encontradas.`
-    };
+- location: string (opcional, ubicación aproximada en el documento)
+- confidence: string (opcional, nivel de confianza: "alta", "media", "baja")`;
 
     try {
-        const response: GenerateContentResponse = await genAI.models.generateContent({
-            model: model,
+        const result = await callVertexAIAPI('extract', {
+            model: modelId,
             contents: {
+                role: 'user',
                 parts: [
-                    prompt,
-                    { text: "Imagen de referencia a buscar:" },
+                    { text: promptText },
+                    { text: 'Imagen de referencia a buscar:' },
                     referencePart,
-                    { text: "Documento donde buscar:" },
+                    { text: 'Documento donde buscar:' },
                     documentPart
                 ]
             },
             config: {
-                responseMimeType: "application/json",
+                responseMimeType: 'application/json',
             },
         });
 
-        const jsonStr = response.text.trim();
+        const jsonStr = result.text.trim();
         return JSON.parse(jsonStr);
     } catch (error) {
-        console.error("Error al buscar imagen en documento:", error);
+        console.error('Error al buscar imagen en documento:', error);
         if (error instanceof Error) {
             throw new Error(`Error de búsqueda: ${error.message}`);
         }
-        throw new Error("Ocurrió un error desconocido al buscar la imagen.");
+        throw new Error('Ocurrió un error desconocido al buscar la imagen.');
     }
 };
