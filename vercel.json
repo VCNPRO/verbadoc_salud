@@ -1,5 +1,5 @@
 {
-  "regions": ["fra1", "ams1"],
+  "regions": ["fra1", "cdg1"],
   "build": {
     "env": {
       "VITE_GEMINI_PROJECT_ID": "@verbadoc-project-id",
