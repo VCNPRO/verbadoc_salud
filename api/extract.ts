@@ -5,20 +5,30 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 const PROJECT_ID = process.env.VITE_GEMINI_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT;
 const LOCATION = 'europe-west1'; // 🇪🇺 BÉLGICA - DATOS EN EUROPA
 
-// Configurar credenciales si están en formato JSON string (Vercel)
-if (process.env.GOOGLE_APPLICATION_CREDENTIALS && process.env.GOOGLE_APPLICATION_CREDENTIALS.startsWith('{')) {
+// Parsear credenciales desde variable de entorno
+let credentials: any = null;
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
   try {
-    const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
-    process.env.GOOGLE_CLOUD_PROJECT = credentials.project_id || PROJECT_ID;
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS.startsWith('{')) {
+      // Credenciales en formato JSON string (Vercel)
+      credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+    } else {
+      // Ruta a archivo de credenciales (desarrollo local)
+      credentials = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+    }
+    console.log('🔑 Credenciales cargadas correctamente');
   } catch (error) {
-    console.error('⚠️ Error al parsear credenciales JSON:', error);
+    console.error('⚠️ Error al parsear credenciales:', error);
   }
 }
 
-// Inicializar Vertex AI
+// Inicializar Vertex AI con credenciales explícitas
 const vertexAI = new VertexAI({
   project: PROJECT_ID!,
   location: LOCATION,
+  googleAuthOptions: credentials ? {
+    credentials: credentials
+  } : undefined,
 });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
