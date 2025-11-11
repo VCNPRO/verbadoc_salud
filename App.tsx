@@ -462,7 +462,7 @@ function App() {
 
     return (
         <div
-            className="min-h-screen font-sans transition-colors duration-500"
+            className="min-h-screen font-sans transition-colors duration-500 flex flex-col"
             style={{
                 backgroundColor: isDarkMode ? '#0f172a' : '#ecfdf5',
                 color: isDarkMode ? '#e2e8f0' : '#064e3b'
@@ -478,43 +478,34 @@ function App() {
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-3">
-                            <div className="flex flex-col">
-                                <div className="flex items-center gap-2">
-                                    <h1
-                                        className="text-xl sm:text-2xl font-bold font-orbitron tracking-wider transition-colors duration-500"
-                                        style={{
-                                            color: isDarkMode ? '#f1f5f9' : '#047857'
-                                        }}
-                                    >
-                                        VerbaDoc Sector Salud 🏥
-                                    </h1>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <p
-                                        className="text-xs sm:text-sm font-sans transition-colors duration-500"
-                                        style={{
-                                            color: isDarkMode ? '#94a3b8' : '#064e3b'
-                                        }}
-                                    >
+                            <div className="flex items-center gap-2">
+                                <h1
+                                    className="text-xl sm:text-2xl font-sans transition-colors duration-500"
+                                    style={{
+                                        color: isDarkMode ? '#f1f5f9' : '#047857'
+                                    }}
+                                >
+                                    verbadoc <span className="text-2xl">🏥</span> sector salud,{' '}
+                                    <span className="text-base font-normal">
                                         trabajando para{' '}
-                                        <span
-                                            className="font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer hover:opacity-80"
-                                            style={{
-                                                backgroundColor: isHealthMode ? '#d1fae5' : '#1e293b',
-                                                color: isHealthMode ? '#047857' : '#06b6d4'
-                                            }}
-                                            onClick={() => {
-                                                const newName = prompt('Ingrese el nombre del cliente:', clientName);
-                                                if (newName && newName.trim()) {
-                                                    setClientName(newName.trim());
-                                                }
-                                            }}
-                                            title="Click para editar"
-                                        >
-                                            {clientName}
-                                        </span>
-                                    </p>
-                                </div>
+                                    </span>
+                                    <span
+                                        className="font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer hover:opacity-80"
+                                        style={{
+                                            backgroundColor: isHealthMode ? '#d1fae5' : '#1e293b',
+                                            color: isHealthMode ? '#047857' : '#06b6d4'
+                                        }}
+                                        onClick={() => {
+                                            const newName = prompt('Ingrese el nombre del cliente:', clientName);
+                                            if (newName && newName.trim()) {
+                                                setClientName(newName.trim());
+                                            }
+                                        }}
+                                        title="Click para editar"
+                                    >
+                                        {clientName}
+                                    </span>
+                                </h1>
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
@@ -621,7 +612,7 @@ function App() {
                 </div>
             </header>
 
-            <main className="p-4 sm:p-6 lg:p-8">
+            <main className="flex-1 p-4 sm:p-6 lg:p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6" style={{height: 'calc(100vh - 112px)'}}>
                     <div className="lg:col-span-3 h-full">
                          <FileUploader
