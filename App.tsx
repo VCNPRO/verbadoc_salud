@@ -452,34 +452,6 @@ function App() {
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
-                            {/* Selector de Modelo IA */}
-                            <div className="flex items-center gap-2">
-                                <label
-                                    htmlFor="model-select"
-                                    className="text-xs font-medium hidden sm:inline"
-                                    style={{ color: isHealthMode ? '#047857' : '#94a3b8' }}
-                                >
-                                    Modelo IA:
-                                </label>
-                                <select
-                                    id="model-select"
-                                    value={selectedModel}
-                                    onChange={(e) => setSelectedModel(e.target.value as GeminiModel)}
-                                    className="text-sm px-3 py-1.5 rounded-md border-2 focus:outline-none focus:ring-2 transition-all"
-                                    style={{
-                                        backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
-                                        borderColor: isHealthMode ? '#00897b' : '#475569',
-                                        color: isHealthMode ? '#00695c' : '#f1f5f9'
-                                    }}
-                                >
-                                    {AVAILABLE_MODELS.map(model => (
-                                        <option key={model.id} value={model.id}>
-                                            {model.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
                             {/* Theme Toggle Button */}
                             <button
                                 onClick={() => setIsDarkMode(!isDarkMode)}
@@ -610,6 +582,8 @@ function App() {
                                     currentPrompt={prompt}
                                     theme={currentTheme}
                                     isHealthMode={isHealthMode}
+                                    selectedModel={selectedModel}
+                                    onModelChange={setSelectedModel}
                                 />
                             </div>
                         </div>
