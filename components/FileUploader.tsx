@@ -41,10 +41,10 @@ const StatusIndicator: React.FC<{ status: UploadedFile['status'] }> = ({ status 
 
 export const FileUploader: React.FC<FileUploaderProps> = ({ files, setFiles, activeFileId, onFileSelect, onUseExample, onExtractAll, isLoading, onViewFile, theme, isHealthMode }) => {
     const cardBg = isHealthMode ? '#ffffff' : 'rgba(30, 41, 59, 0.5)';
-    const borderColor = isHealthMode ? theme?.border || '#6ee7b7' : 'rgba(51, 65, 85, 0.5)';
-    const textColor = isHealthMode ? theme?.text || '#064e3b' : '#f1f5f9';
-    const textSecondary = isHealthMode ? theme?.textSecondary || '#065f46' : '#94a3b8';
-    const accentColor = isHealthMode ? theme?.primary || '#047857' : '#06b6d4';
+    const borderColor = isHealthMode ? theme?.border || '#10b981' : 'rgba(51, 65, 85, 0.5)';
+    const textColor = isHealthMode ? theme?.text || '#0f172a' : '#f1f5f9';
+    const textSecondary = isHealthMode ? theme?.textSecondary || '#475569' : '#94a3b8';
+    const accentColor = isHealthMode ? theme?.primary || '#059669' : '#06b6d4';
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 

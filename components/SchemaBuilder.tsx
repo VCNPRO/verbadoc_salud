@@ -64,11 +64,11 @@ const SchemaFieldRow: React.FC<{
     isHealthMode?: boolean;
 }> = ({ field, path, onUpdate, onRemove, onAddChild, isRoot, schemaLength, theme, isHealthMode }) => {
     const isNestedType = field.type === 'OBJECT' || field.type === 'ARRAY_OF_OBJECTS';
-    const textColor = isHealthMode ? (theme?.text || '#064e3b') : '#f1f5f9';
-    const bgColor = isHealthMode ? '#f9fafb' : '#1e293b';
-    const borderColor = isHealthMode ? '#d1d5db' : '#475569';
-    const accentColor = isHealthMode ? (theme?.primary || '#047857') : '#06b6d4';
-    const rowBg = isHealthMode ? '#f0fdf4' : 'rgba(51, 65, 85, 0.3)';
+    const textColor = isHealthMode ? (theme?.text || '#0f172a') : '#f1f5f9';
+    const bgColor = isHealthMode ? '#f8fafc' : '#1e293b';
+    const borderColor = isHealthMode ? '#e5e7eb' : '#475569';
+    const accentColor = isHealthMode ? (theme?.primary || '#059669') : '#06b6d4';
+    const rowBg = isHealthMode ? '#ffffff' : 'rgba(51, 65, 85, 0.3)';
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newName = e.target.value;
@@ -175,7 +175,7 @@ const SchemaFieldRow: React.FC<{
 };
 
 export const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ schema, setSchema, theme, isHealthMode }) => {
-  const accentColor = isHealthMode ? (theme?.primary || '#047857') : '#06b6d4';
+  const accentColor = isHealthMode ? (theme?.primary || '#059669') : '#06b6d4';
 
   const handleUpdate = (path: string[], payload: Partial<SchemaField>) => {
     const updater = (field: SchemaField): SchemaField => {

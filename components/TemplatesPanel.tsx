@@ -750,11 +750,11 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
     };
 
     const cardBg = isHealthMode ? '#ffffff' : 'rgba(30, 41, 59, 0.3)';
-    const borderColor = isHealthMode ? theme?.border || '#6ee7b7' : 'rgba(51, 65, 85, 0.5)';
+    const borderColor = isHealthMode ? theme?.border || '#10b981' : 'rgba(51, 65, 85, 0.5)';
     const headerBg = isHealthMode ? '#ffffff' : 'rgba(2, 6, 23, 0.5)';
-    const textColor = isHealthMode ? theme?.text || '#064e3b' : '#f1f5f9';
-    const textSecondary = isHealthMode ? theme?.textSecondary || '#065f46' : '#94a3b8';
-    const accentColor = isHealthMode ? theme?.primary || '#047857' : '#06b6d4';
+    const textColor = isHealthMode ? theme?.text || '#0f172a' : '#f1f5f9';
+    const textSecondary = isHealthMode ? theme?.textSecondary || '#475569' : '#94a3b8';
+    const accentColor = isHealthMode ? theme?.primary || '#059669' : '#06b6d4';
 
     return (
         <div
@@ -1072,12 +1072,12 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                             <div className="mt-6 border-t-2 pt-4" style={{ borderTopColor: borderColor }}>
                                 <button
                                     onClick={() => setShowArchived(!showArchived)}
-                                    className="w-full flex items-center justify-between p-3 rounded-lg transition-all hover:opacity-80"
+                                    className="w-full flex items-center justify-between p-3 rounded-lg transition-all hover:opacity-80 hover:shadow-md"
                                     style={{
-                                        backgroundColor: isHealthMode ? '#fef3c7' : 'rgba(251, 191, 36, 0.1)',
+                                        backgroundColor: isHealthMode ? '#d1fae5' : 'rgba(16, 185, 129, 0.1)',
                                         borderWidth: '2px',
                                         borderStyle: 'dashed',
-                                        borderColor: isHealthMode ? '#f59e0b' : '#fbbf24',
+                                        borderColor: isHealthMode ? '#10b981' : '#6ee7b7',
                                     }}
                                 >
                                     <div className="flex items-center gap-2">
