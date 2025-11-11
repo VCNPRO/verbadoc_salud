@@ -226,16 +226,12 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
     const [newTemplateName, setNewTemplateName] = useState('');
     const [newTemplateDescription, setNewTemplateDescription] = useState('');
     const [showArchived, setShowArchived] = useState(false);
-    const [selectedSector] = useState<Sector>('salud'); // Hardcoded to health sector only
+    const selectedSector: Sector = 'salud'; // Hardcoded to health sector only - no state needed
     const [showCertificationsModal, setShowCertificationsModal] = useState(false);
     const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
     const [newSchema, setNewSchema] = useState<SchemaField[]>([{ id: `field-${Date.now()}`, name: '', type: 'STRING' }]);
     const [newPrompt, setNewPrompt] = useState('Extrae la información clave del siguiente documento según el esquema JSON proporcionado.');
     const [isGeneratingSchema, setIsGeneratingSchema] = useState(false);
-
-    useEffect(() => {
-        setSelectedSector(currentSector || 'general');
-    }, [currentSector]);
 
     // Load custom templates from localStorage
     useEffect(() => {
