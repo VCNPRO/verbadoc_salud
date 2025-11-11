@@ -190,3 +190,21 @@ export interface SectorInfo {
     recommendedModel?: 'gemini-2.5-flash' | 'gemini-2.5-pro';
     certifications?: string[];
 }
+
+// Medical Specialties
+export type MedicalSpecialty =
+  | 'general'
+  | 'laboratorio'
+  | 'cardiologia'
+  | 'traumatologia'
+  | 'oftalmologia'
+  | 'pediatria'
+  | 'cirugia'
+  | 'radiologia';
+
+export interface SpecialtyInfo {
+    id: MedicalSpecialty;
+    name: string;
+    description: string;
+    icon: string;
+}

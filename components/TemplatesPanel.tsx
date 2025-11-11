@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FileTextIcon, ReceiptIcon, FileIcon, SparklesIcon } from './Icons.tsx';
-import type { SchemaField, Sector } from '../types.ts';
+import type { SchemaField, Sector, MedicalSpecialty } from '../types.ts';
 import { SECTORS, getSectorById } from '../utils/sectorsConfig.ts';
+import { MEDICAL_SPECIALTIES, getSpecialtyById } from '../utils/specialtiesConfig.ts';
 import { SchemaBuilder } from './SchemaBuilder.tsx';
 import { generateSchemaFromPrompt } from '../services/geminiService.ts';
 
@@ -16,6 +17,7 @@ export interface Template {
     archived?: boolean;
     custom?: boolean;
     sector?: Sector;
+    specialty?: MedicalSpecialty;
 }
 
 interface TemplatesPanelProps {
@@ -30,7 +32,7 @@ interface TemplatesPanelProps {
 }
 
 const defaultTemplates: any[] = [
-    // Salud - Resultados de Laboratorio
+    // ANÁLISIS CLÍNICOS / LABORATORIO
     {
         id: 'template_lab_results',
         name: 'Resultados de Laboratorio',
@@ -38,6 +40,7 @@ const defaultTemplates: any[] = [
         type: 'modelo',
         icon: 'document',
         sector: 'salud',
+        specialty: 'laboratorio',
         prompt: 'Extrae los datos del análisis de laboratorio: información del paciente, fecha, tipo de análisis, y todos los resultados con sus valores de referencia.',
         schema: [
             { id: 'f1', name: 'paciente_nombre', type: 'STRING' },
@@ -60,7 +63,7 @@ const defaultTemplates: any[] = [
             { id: 'f8', name: 'observaciones', type: 'STRING' },
         ]
     },
-    // Salud - Receta Médica
+    // GENERAL
     {
         id: 'template_prescription',
         name: 'Receta Médica',
@@ -68,6 +71,7 @@ const defaultTemplates: any[] = [
         type: 'modelo',
         icon: 'receipt',
         sector: 'salud',
+        specialty: 'general',
         prompt: 'Extrae los datos de la receta médica: información del paciente, médico prescriptor, medicamentos prescritos con dosis y duración.',
         schema: [
             { id: 'p1', name: 'paciente_nombre', type: 'STRING' },
@@ -90,7 +94,6 @@ const defaultTemplates: any[] = [
             { id: 'p7', name: 'diagnostico', type: 'STRING' },
         ]
     },
-    // Salud - Certificado Médico
     {
         id: 'template_medical_certificate',
         name: 'Certificado Médico',
@@ -98,6 +101,7 @@ const defaultTemplates: any[] = [
         type: 'modelo',
         icon: 'document',
         sector: 'salud',
+        specialty: 'general',
         prompt: 'Extrae los datos del certificado médico: datos del paciente, médico certificante, diagnóstico, período de reposo y restricciones.',
         schema: [
             { id: 'c1', name: 'paciente_nombre', type: 'STRING' },
@@ -113,7 +117,6 @@ const defaultTemplates: any[] = [
             { id: 'c11', name: 'observaciones', type: 'STRING' },
         ]
     },
-    // Salud - Informe Radiológico
     {
         id: 'template_radiology',
         name: 'Informe Radiológico',
@@ -121,6 +124,7 @@ const defaultTemplates: any[] = [
         type: 'modelo',
         icon: 'document',
         sector: 'salud',
+        specialty: 'radiologia',
         prompt: 'Extrae los datos del informe radiológico: información del paciente, tipo de estudio, hallazgos, impresión diagnóstica y conclusiones.',
         schema: [
             { id: 'r1', name: 'paciente_nombre', type: 'STRING' },
@@ -135,7 +139,6 @@ const defaultTemplates: any[] = [
             { id: 'r10', name: 'radiologo', type: 'STRING' },
         ]
     },
-    // Salud - Certificado de Vacunación
     {
         id: 'template_vaccination',
         name: 'Certificado de Vacunación',
@@ -143,6 +146,7 @@ const defaultTemplates: any[] = [
         type: 'modelo',
         icon: 'receipt',
         sector: 'salud',
+        specialty: 'general',
         prompt: 'Extrae los datos del certificado de vacunación: información del paciente y listado completo de vacunas aplicadas con fechas y lotes.',
         schema: [
             { id: 'v1', name: 'paciente_nombre', type: 'STRING' },
@@ -164,7 +168,6 @@ const defaultTemplates: any[] = [
             { id: 'v6', name: 'fecha_proxima_dosis', type: 'STRING' },
         ]
     },
-    // Salud - Consulta Médica
     {
         id: 'template_consultation',
         name: 'Consulta Médica',
@@ -172,6 +175,7 @@ const defaultTemplates: any[] = [
         type: 'modelo',
         icon: 'document',
         sector: 'salud',
+        specialty: 'general',
         prompt: 'Extrae los datos de la consulta médica: motivo de consulta, antecedentes, exploración física, diagnóstico y plan de tratamiento.',
         schema: [
             { id: 'm1', name: 'paciente_nombre', type: 'STRING' },
@@ -192,7 +196,6 @@ const defaultTemplates: any[] = [
             { id: 'm11', name: 'proxima_cita', type: 'STRING' },
         ]
     },
-    // Salud - Resumen de Alta Hospitalaria
     {
         id: 'template_discharge',
         name: 'Resumen de Alta Hospitalaria',
@@ -200,6 +203,7 @@ const defaultTemplates: any[] = [
         type: 'modelo',
         icon: 'document',
         sector: 'salud',
+        specialty: 'general',
         prompt: 'Extrae los datos del informe de alta hospitalaria: motivo de ingreso, evolución, procedimientos realizados, diagnósticos y recomendaciones al alta.',
         schema: [
             { id: 'd1', name: 'paciente_nombre', type: 'STRING' },
@@ -218,11 +222,199 @@ const defaultTemplates: any[] = [
             { id: 'd14', name: 'cita_revision', type: 'STRING' },
         ]
     },
+
+    // OFTALMOLOGÍA
+    {
+        id: 'template_ophthalmology_consultation',
+        name: 'Consulta Oftalmológica',
+        description: 'Examen oftalmológico completo con agudeza visual y diagnóstico',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        specialty: 'oftalmologia',
+        prompt: 'Extrae los datos de la consulta oftalmológica: datos del paciente, agudeza visual, refracción, presión intraocular, examen de segmento anterior y posterior, diagnóstico y plan.',
+        schema: [
+            { id: 'oft1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'oft2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'oft3', name: 'fecha_consulta', type: 'STRING' },
+            { id: 'oft4', name: 'oftalmologo', type: 'STRING' },
+            { id: 'oft5', name: 'motivo_consulta', type: 'STRING' },
+            { id: 'oft6', name: 'agudeza_visual', type: 'OBJECT', children: [
+                { id: 'oft6a', name: 'ojo_derecho_sin_correccion', type: 'STRING' },
+                { id: 'oft6b', name: 'ojo_izquierdo_sin_correccion', type: 'STRING' },
+                { id: 'oft6c', name: 'ojo_derecho_con_correccion', type: 'STRING' },
+                { id: 'oft6d', name: 'ojo_izquierdo_con_correccion', type: 'STRING' },
+            ]},
+            { id: 'oft7', name: 'refraccion', type: 'OBJECT', children: [
+                { id: 'oft7a', name: 'ojo_derecho', type: 'STRING' },
+                { id: 'oft7b', name: 'ojo_izquierdo', type: 'STRING' },
+            ]},
+            { id: 'oft8', name: 'presion_intraocular', type: 'OBJECT', children: [
+                { id: 'oft8a', name: 'ojo_derecho', type: 'NUMBER' },
+                { id: 'oft8b', name: 'ojo_izquierdo', type: 'NUMBER' },
+            ]},
+            { id: 'oft9', name: 'segmento_anterior', type: 'STRING' },
+            { id: 'oft10', name: 'segmento_posterior', type: 'STRING' },
+            { id: 'oft11', name: 'diagnostico', type: 'STRING' },
+            { id: 'oft12', name: 'tratamiento', type: 'STRING' },
+        ]
+    },
+    {
+        id: 'template_cataract_surgery',
+        name: 'Cirugía de Cataratas',
+        description: 'Informe operatorio de facoemulsificación e implante de lente intraocular',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        specialty: 'oftalmologia',
+        prompt: 'Extrae los datos del informe de cirugía de cataratas: paciente, ojo operado, tipo de catarata, técnica quirúrgica, lente intraocular implantada, complicaciones y recomendaciones.',
+        schema: [
+            { id: 'cat1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'cat2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'cat3', name: 'fecha_cirugia', type: 'STRING' },
+            { id: 'cat4', name: 'cirujano', type: 'STRING' },
+            { id: 'cat5', name: 'ojo_operado', type: 'STRING' },
+            { id: 'cat6', name: 'tipo_catarata', type: 'STRING' },
+            { id: 'cat7', name: 'tecnica_quirurgica', type: 'STRING' },
+            { id: 'cat8', name: 'lente_intraocular', type: 'OBJECT', children: [
+                { id: 'cat8a', name: 'tipo', type: 'STRING' },
+                { id: 'cat8b', name: 'dioptrias', type: 'NUMBER' },
+                { id: 'cat8c', name: 'marca_modelo', type: 'STRING' },
+            ]},
+            { id: 'cat9', name: 'biometria_preoperatoria', type: 'STRING' },
+            { id: 'cat10', name: 'complicaciones_intraoperatorias', type: 'STRING' },
+            { id: 'cat11', name: 'observaciones', type: 'STRING' },
+            { id: 'cat12', name: 'cuidados_postoperatorios', type: 'STRING' },
+        ]
+    },
+    {
+        id: 'template_fundoscopy',
+        name: 'Fondo de Ojo / Retinografía',
+        description: 'Exploración del fondo de ojo y análisis de retina',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        specialty: 'oftalmologia',
+        prompt: 'Extrae los datos de la exploración de fondo de ojo: paciente, características del nervio óptico, mácula, vasos retinianos, hallazgos patológicos y conclusiones.',
+        schema: [
+            { id: 'ret1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'ret2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'ret3', name: 'fecha_exploracion', type: 'STRING' },
+            { id: 'ret4', name: 'medico_explorador', type: 'STRING' },
+            { id: 'ret5', name: 'midriasis_realizada', type: 'STRING' },
+            { id: 'ret6', name: 'ojo_derecho', type: 'OBJECT', children: [
+                { id: 'ret6a', name: 'papila_optica', type: 'STRING' },
+                { id: 'ret6b', name: 'macula', type: 'STRING' },
+                { id: 'ret6c', name: 'vasos_retinianos', type: 'STRING' },
+                { id: 'ret6d', name: 'periferia', type: 'STRING' },
+            ]},
+            { id: 'ret7', name: 'ojo_izquierdo', type: 'OBJECT', children: [
+                { id: 'ret7a', name: 'papila_optica', type: 'STRING' },
+                { id: 'ret7b', name: 'macula', type: 'STRING' },
+                { id: 'ret7c', name: 'vasos_retinianos', type: 'STRING' },
+                { id: 'ret7d', name: 'periferia', type: 'STRING' },
+            ]},
+            { id: 'ret8', name: 'hallazgos_patologicos', type: 'STRING' },
+            { id: 'ret9', name: 'diagnostico', type: 'STRING' },
+            { id: 'ret10', name: 'recomendaciones', type: 'STRING' },
+        ]
+    },
+    {
+        id: 'template_tonometry',
+        name: 'Tonometría (Presión Ocular)',
+        description: 'Medición de la presión intraocular para detección de glaucoma',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        specialty: 'oftalmologia',
+        prompt: 'Extrae los datos de la tonometría: paciente, método utilizado, valores de presión intraocular en ambos ojos, interpretación y seguimiento.',
+        schema: [
+            { id: 'ton1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'ton2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'ton3', name: 'fecha_medicion', type: 'STRING' },
+            { id: 'ton4', name: 'hora_medicion', type: 'STRING' },
+            { id: 'ton5', name: 'metodo_tonometria', type: 'STRING' },
+            { id: 'ton6', name: 'presion_intraocular', type: 'OBJECT', children: [
+                { id: 'ton6a', name: 'ojo_derecho', type: 'NUMBER' },
+                { id: 'ton6b', name: 'ojo_izquierdo', type: 'NUMBER' },
+                { id: 'ton6c', name: 'unidad', type: 'STRING' },
+            ]},
+            { id: 'ton7', name: 'espesor_corneal', type: 'OBJECT', children: [
+                { id: 'ton7a', name: 'ojo_derecho', type: 'NUMBER' },
+                { id: 'ton7b', name: 'ojo_izquierdo', type: 'NUMBER' },
+            ]},
+            { id: 'ton8', name: 'interpretacion', type: 'STRING' },
+            { id: 'ton9', name: 'riesgo_glaucoma', type: 'STRING' },
+            { id: 'ton10', name: 'seguimiento', type: 'STRING' },
+        ]
+    },
+    {
+        id: 'template_visual_field',
+        name: 'Campo Visual / Perimetría',
+        description: 'Estudio de campo visual para detección de defectos',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        specialty: 'oftalmologia',
+        prompt: 'Extrae los datos del campo visual: paciente, tipo de perimetría, resultados por cada ojo, índices de fiabilidad, defectos detectados y conclusiones.',
+        schema: [
+            { id: 'cv1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'cv2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'cv3', name: 'fecha_estudio', type: 'STRING' },
+            { id: 'cv4', name: 'tipo_perimetria', type: 'STRING' },
+            { id: 'cv5', name: 'estrategia', type: 'STRING' },
+            { id: 'cv6', name: 'ojo_derecho', type: 'OBJECT', children: [
+                { id: 'cv6a', name: 'fiabilidad', type: 'STRING' },
+                { id: 'cv6b', name: 'md_mean_deviation', type: 'NUMBER' },
+                { id: 'cv6c', name: 'psd_pattern_standard_deviation', type: 'NUMBER' },
+                { id: 'cv6d', name: 'defectos_detectados', type: 'STRING' },
+            ]},
+            { id: 'cv7', name: 'ojo_izquierdo', type: 'OBJECT', children: [
+                { id: 'cv7a', name: 'fiabilidad', type: 'STRING' },
+                { id: 'cv7b', name: 'md_mean_deviation', type: 'NUMBER' },
+                { id: 'cv7c', name: 'psd_pattern_standard_deviation', type: 'NUMBER' },
+                { id: 'cv7d', name: 'defectos_detectados', type: 'STRING' },
+            ]},
+            { id: 'cv8', name: 'interpretacion', type: 'STRING' },
+            { id: 'cv9', name: 'diagnostico', type: 'STRING' },
+        ]
+    },
+    {
+        id: 'template_glasses_prescription',
+        name: 'Receta de Lentes/Gafas',
+        description: 'Prescripción óptica para corrección visual',
+        type: 'modelo',
+        icon: 'receipt',
+        sector: 'salud',
+        specialty: 'oftalmologia',
+        prompt: 'Extrae los datos de la receta de lentes: paciente, graduación para cada ojo (esfera, cilindro, eje), adición, distancia pupilar y tipo de lentes.',
+        schema: [
+            { id: 'gaf1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'gaf2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'gaf3', name: 'fecha_prescripcion', type: 'STRING' },
+            { id: 'gaf4', name: 'oftalmologo_optometrista', type: 'STRING' },
+            { id: 'gaf5', name: 'numero_colegiado', type: 'STRING' },
+            { id: 'gaf6', name: 'ojo_derecho', type: 'OBJECT', children: [
+                { id: 'gaf6a', name: 'esfera', type: 'NUMBER' },
+                { id: 'gaf6b', name: 'cilindro', type: 'NUMBER' },
+                { id: 'gaf6c', name: 'eje', type: 'NUMBER' },
+                { id: 'gaf6d', name: 'adicion', type: 'NUMBER' },
+            ]},
+            { id: 'gaf7', name: 'ojo_izquierdo', type: 'OBJECT', children: [
+                { id: 'gaf7a', name: 'esfera', type: 'NUMBER' },
+                { id: 'gaf7b', name: 'cilindro', type: 'NUMBER' },
+                { id: 'gaf7c', name: 'eje', type: 'NUMBER' },
+                { id: 'gaf7d', name: 'adicion', type: 'NUMBER' },
+            ]},
+            { id: 'gaf8', name: 'distancia_pupilar', type: 'NUMBER' },
+            { id: 'gaf9', name: 'tipo_lentes', type: 'STRING' },
+            { id: 'gaf10', name: 'observaciones', type: 'STRING' },
+        ]
+    },
 ];
 
 // Archived health sector templates
 const archivedHealthTemplates: any[] = [
-    // Salud - Consentimiento Informado
     {
         id: 'template_consent',
         name: 'Consentimiento Informado',
@@ -230,6 +422,7 @@ const archivedHealthTemplates: any[] = [
         type: 'modelo',
         icon: 'document',
         sector: 'salud',
+        specialty: 'general',
         archived: true,
         prompt: 'Extrae los datos del consentimiento informado: paciente, procedimiento, riesgos aceptados, y firmas.',
         schema: [
@@ -245,7 +438,6 @@ const archivedHealthTemplates: any[] = [
             { id: 'ci10', name: 'testigo_nombre', type: 'STRING' },
         ]
     },
-    // Salud - Parte de Urgencias
     {
         id: 'template_emergency',
         name: 'Parte de Urgencias',
@@ -253,6 +445,7 @@ const archivedHealthTemplates: any[] = [
         type: 'modelo',
         icon: 'document',
         sector: 'salud',
+        specialty: 'general',
         archived: true,
         prompt: 'Extrae los datos del parte de urgencias: llegada, triaje, motivo consulta, constantes vitales, diagnóstico y destino.',
         schema: [
@@ -275,7 +468,6 @@ const archivedHealthTemplates: any[] = [
             { id: 'u11', name: 'destino_paciente', type: 'STRING' },
         ]
     },
-    // Salud - Informe Quirúrgico
     {
         id: 'template_surgery',
         name: 'Informe Quirúrgico',
@@ -283,6 +475,7 @@ const archivedHealthTemplates: any[] = [
         type: 'modelo',
         icon: 'document',
         sector: 'salud',
+        specialty: 'cirugia',
         archived: true,
         prompt: 'Extrae los datos del informe quirúrgico: datos del paciente, equipo quirúrgico, procedimiento, hallazgos y complicaciones.',
         schema: [
@@ -302,7 +495,6 @@ const archivedHealthTemplates: any[] = [
             { id: 'q14', name: 'recomendaciones_postoperatorias', type: 'STRING' },
         ]
     },
-    // Salud - Epicrisis
     {
         id: 'template_epicrisis',
         name: 'Epicrisis / Resumen de Ingreso',
@@ -310,6 +502,7 @@ const archivedHealthTemplates: any[] = [
         type: 'modelo',
         icon: 'document',
         sector: 'salud',
+        specialty: 'general',
         archived: true,
         prompt: 'Extrae los datos de la epicrisis: resumen completo del ingreso hospitalario incluyendo evolución, procedimientos y plan al alta.',
         schema: [
@@ -330,7 +523,6 @@ const archivedHealthTemplates: any[] = [
             { id: 'e15', name: 'seguimiento', type: 'STRING' },
         ]
     },
-    // Salud - Historia Clínica Pediátrica
     {
         id: 'template_pediatric',
         name: 'Historia Clínica Pediátrica',
@@ -338,6 +530,7 @@ const archivedHealthTemplates: any[] = [
         type: 'modelo',
         icon: 'document',
         sector: 'salud',
+        specialty: 'pediatria',
         archived: true,
         prompt: 'Extrae los datos de la historia clínica pediátrica: datos del niño, desarrollo, vacunación, y valoración pediátrica.',
         schema: [
@@ -371,6 +564,7 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
     const [newTemplateDescription, setNewTemplateDescription] = useState('');
     const [showArchived, setShowArchived] = useState(false);
     const selectedSector: Sector = 'salud'; // Hardcoded to health sector only - no state needed
+    const [selectedSpecialty, setSelectedSpecialty] = useState<MedicalSpecialty>('general');
     const [showCertificationsModal, setShowCertificationsModal] = useState(false);
     const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
     const [newSchema, setNewSchema] = useState<SchemaField[]>([{ id: `field-${Date.now()}`, name: '', type: 'STRING' }]);
@@ -462,11 +656,19 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
         }
     };
 
-    // All templates are for health sector only
-    const filteredTemplates = defaultTemplates.filter(t => t.sector === 'salud' || !t.sector);
+    // Filter templates by selected specialty
+    const filteredTemplates = defaultTemplates.filter(t =>
+        (t.sector === 'salud' || !t.sector) &&
+        (t.specialty === selectedSpecialty || !t.specialty)
+    );
+
+    const filteredArchivedTemplates = archivedHealthTemplates.filter(t =>
+        t.specialty === selectedSpecialty || !t.specialty
+    );
 
     const activeCustomTemplates = customTemplates.filter(t => showArchived || !t.archived);
     const currentSectorInfo = getSectorById(selectedSector);
+    const currentSpecialtyInfo = getSpecialtyById(selectedSpecialty);
 
     const renderIcon = (iconType: Template['icon']) => {
         switch (iconType) {
@@ -571,6 +773,31 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
             >
                 <h2 className="text-lg font-semibold transition-colors duration-500" style={{ color: textColor }}>Plantillas</h2>
                 <p className="text-xs mt-1 transition-colors duration-500" style={{ color: textSecondary }}>Modelos y plantillas predefinidas</p>
+
+                {/* Specialty Selector */}
+                <div className="mt-3">
+                    <label className="block text-xs font-medium mb-1.5 transition-colors duration-500" style={{ color: textColor }}>
+                        Especialidad médica:
+                    </label>
+                    <select
+                        value={selectedSpecialty}
+                        onChange={(e) => setSelectedSpecialty(e.target.value as MedicalSpecialty)}
+                        className="w-full rounded-md p-2 text-sm transition-colors duration-500"
+                        style={{
+                            backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                            borderWidth: '1px',
+                            borderStyle: 'solid',
+                            borderColor: borderColor,
+                            color: textColor
+                        }}
+                    >
+                        {MEDICAL_SPECIALTIES.map(specialty => (
+                            <option key={specialty.id} value={specialty.id}>
+                                {specialty.icon} {specialty.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             <div
@@ -825,8 +1052,8 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                                     className="text-sm font-bold mb-3 flex items-center gap-2 transition-colors duration-500"
                                     style={{ color: textColor }}
                                 >
-                                    <span className="text-lg">{currentSectorInfo?.icon}</span>
-                                    Plantillas de {currentSectorInfo?.name}
+                                    <span className="text-lg">{currentSpecialtyInfo?.icon}</span>
+                                    {currentSpecialtyInfo?.name} ({filteredTemplates.length})
                                 </h3>
                                 <div className="space-y-2">
                                     {filteredTemplates.map(template => (
@@ -836,53 +1063,55 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                             </div>
                         ) : (
                             <div className="text-center py-8 text-sm transition-colors duration-500" style={{ color: textSecondary }}>
-                                <p>No hay plantillas para este sector</p>
+                                <p>No hay plantillas para esta especialidad</p>
                             </div>
                         )}
 
                         {/* Archived Health Templates Section */}
-                        <div className="mt-6 border-t-2 pt-4" style={{ borderTopColor: borderColor }}>
-                            <button
-                                onClick={() => setShowArchived(!showArchived)}
-                                className="w-full flex items-center justify-between p-3 rounded-lg transition-all hover:opacity-80"
-                                style={{
-                                    backgroundColor: isHealthMode ? '#fef3c7' : 'rgba(251, 191, 36, 0.1)',
-                                    borderWidth: '2px',
-                                    borderStyle: 'dashed',
-                                    borderColor: isHealthMode ? '#f59e0b' : '#fbbf24',
-                                }}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xl">📦</span>
-                                    <div className="text-left">
-                                        <h3 className="text-sm font-semibold" style={{ color: textColor }}>
-                                            Plantillas Archivadas ({archivedHealthTemplates.length})
-                                        </h3>
-                                        <p className="text-xs" style={{ color: textSecondary }}>
-                                            Plantillas especializadas del sector salud
-                                        </p>
-                                    </div>
-                                </div>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className={`h-5 w-5 transition-transform ${showArchived ? 'rotate-180' : ''}`}
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    style={{ color: textColor }}
+                        {filteredArchivedTemplates.length > 0 && (
+                            <div className="mt-6 border-t-2 pt-4" style={{ borderTopColor: borderColor }}>
+                                <button
+                                    onClick={() => setShowArchived(!showArchived)}
+                                    className="w-full flex items-center justify-between p-3 rounded-lg transition-all hover:opacity-80"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#fef3c7' : 'rgba(251, 191, 36, 0.1)',
+                                        borderWidth: '2px',
+                                        borderStyle: 'dashed',
+                                        borderColor: isHealthMode ? '#f59e0b' : '#fbbf24',
+                                    }}
                                 >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl">📦</span>
+                                        <div className="text-left">
+                                            <h3 className="text-sm font-semibold" style={{ color: textColor }}>
+                                                Plantillas Archivadas ({filteredArchivedTemplates.length})
+                                            </h3>
+                                            <p className="text-xs" style={{ color: textSecondary }}>
+                                                Plantillas especializadas de {currentSpecialtyInfo?.name}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className={`h-5 w-5 transition-transform ${showArchived ? 'rotate-180' : ''}`}
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        style={{ color: textColor }}
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
 
-                            {showArchived && (
-                                <div className="mt-3 space-y-2">
-                                    {archivedHealthTemplates.map(template => (
-                                        <TemplateCard key={template.id} template={template} />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                                {showArchived && (
+                                    <div className="mt-3 space-y-2">
+                                        {filteredArchivedTemplates.map(template => (
+                                            <TemplateCard key={template.id} template={template} />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Modelos Guardados */}
                         <div>

@@ -94,6 +94,9 @@ function App() {
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
     const [showResultsExpanded, setShowResultsExpanded] = useState<boolean>(false);
     const [selectedModel, setSelectedModel] = useState<GeminiModel>('gemini-2.5-flash');
+    const [clientName, setClientName] = useState<string>(() => {
+        return localStorage.getItem('verbadoc-client-name') || '[Nombre de Cliente]';
+    });
 
     // State for the editor, which can be reused across different files
     const [prompt, setPrompt] = useState<string>('Extrae la información clave del siguiente documento según el esquema JSON proporcionado.');
@@ -131,6 +134,11 @@ function App() {
             console.error('Error al guardar historial en localStorage:', error);
         }
     }, [history]);
+
+    // Guardar nombre del cliente en localStorage
+    useEffect(() => {
+        localStorage.setItem('verbadoc-client-name', clientName);
+    }, [clientName]);
 
     const activeFile = useMemo(() => files.find(f => f.id === activeFileId), [files, activeFileId]);
 
@@ -469,23 +477,45 @@ function App() {
             >
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
-                        <div className="flex items-baseline gap-3">
-                            <h1
-                                className="text-3xl font-bold font-orbitron tracking-wider transition-colors duration-500"
-                                style={{
-                                    color: isDarkMode ? '#f1f5f9' : '#047857'
-                                }}
-                            >
-                                verbadoc
-                            </h1>
-                            <p
-                                className="text-sm font-sans transition-colors duration-500"
-                                style={{
-                                    color: isDarkMode ? '#94a3b8' : '#064e3b'
-                                }}
-                            >
-                                trabajando para {!isDarkMode && <span className="font-bold px-2 py-1 bg-green-100 text-green-800 rounded-md">🏥 Sector Salud</span>}
-                            </p>
+                        <div className="flex items-center gap-3">
+                            <div className="flex flex-col">
+                                <div className="flex items-center gap-2">
+                                    <h1
+                                        className="text-xl sm:text-2xl font-bold font-orbitron tracking-wider transition-colors duration-500"
+                                        style={{
+                                            color: isDarkMode ? '#f1f5f9' : '#047857'
+                                        }}
+                                    >
+                                        VerbaDoc Sector Salud 🏥
+                                    </h1>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <p
+                                        className="text-xs sm:text-sm font-sans transition-colors duration-500"
+                                        style={{
+                                            color: isDarkMode ? '#94a3b8' : '#064e3b'
+                                        }}
+                                    >
+                                        trabajando para{' '}
+                                        <span
+                                            className="font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer hover:opacity-80"
+                                            style={{
+                                                backgroundColor: isHealthMode ? '#d1fae5' : '#1e293b',
+                                                color: isHealthMode ? '#047857' : '#06b6d4'
+                                            }}
+                                            onClick={() => {
+                                                const newName = prompt('Ingrese el nombre del cliente:', clientName);
+                                                if (newName && newName.trim()) {
+                                                    setClientName(newName.trim());
+                                                }
+                                            }}
+                                            title="Click para editar"
+                                        >
+                                            {clientName}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                         <div className="flex items-center gap-4">
                             {/* Selector de Modelo IA */}
