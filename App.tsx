@@ -480,32 +480,46 @@ function App() {
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
                                 <h1
-                                    className="text-xl sm:text-2xl font-sans transition-colors duration-500"
+                                    className="text-xl sm:text-2xl font-orbitron tracking-wider transition-colors duration-500"
                                     style={{
                                         color: isDarkMode ? '#f1f5f9' : '#047857'
                                     }}
                                 >
-                                    verbadoc <span className="text-2xl">🏥</span> sector salud,{' '}
-                                    <span className="text-base font-normal">
-                                        trabajando para{' '}
-                                    </span>
-                                    <span
-                                        className="font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer hover:opacity-80"
-                                        style={{
-                                            backgroundColor: isHealthMode ? '#d1fae5' : '#1e293b',
-                                            color: isHealthMode ? '#047857' : '#06b6d4'
-                                        }}
-                                        onClick={() => {
-                                            const newName = prompt('Ingrese el nombre del cliente:', clientName);
-                                            if (newName && newName.trim()) {
-                                                setClientName(newName.trim());
-                                            }
-                                        }}
-                                        title="Click para editar"
-                                    >
-                                        {clientName}
-                                    </span>
+                                    verbadoc
                                 </h1>
+                                <span
+                                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-sm font-medium"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#d1fae5' : '#334155',
+                                        color: isHealthMode ? '#047857' : '#f1f5f9'
+                                    }}
+                                >
+                                    🏥 Sector Salud
+                                </span>
+                                <span
+                                    className="text-base font-sans font-normal transition-colors duration-500"
+                                    style={{
+                                        color: isDarkMode ? '#94a3b8' : '#064e3b'
+                                    }}
+                                >
+                                    trabajando para
+                                </span>
+                                <span
+                                    className="font-sans font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer hover:opacity-80"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#d1fae5' : '#1e293b',
+                                        color: isHealthMode ? '#047857' : '#06b6d4'
+                                    }}
+                                    onClick={() => {
+                                        const newName = prompt('Ingrese el nombre del cliente:', clientName);
+                                        if (newName && newName.trim()) {
+                                            setClientName(newName.trim());
+                                        }
+                                    }}
+                                    title="Click para editar"
+                                >
+                                    {clientName}
+                                </span>
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
