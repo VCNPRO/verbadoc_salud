@@ -10,6 +10,7 @@ interface ResultsViewerProps {
     onClose?: () => void;
     onClearHistory?: () => void;
     onExportHistory?: () => void;
+    onExportExcel?: () => void;
     onImportHistory?: () => void;
 }
 
@@ -20,6 +21,7 @@ export const ResultsViewer: React.FC<ResultsViewerProps> = ({
     onClose,
     onClearHistory,
     onExportHistory,
+    onExportExcel,
     onImportHistory
 }) => {
     const [selectedResult, setSelectedResult] = useState<ExtractionResult | null>(
@@ -187,7 +189,23 @@ export const ResultsViewer: React.FC<ResultsViewerProps> = ({
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
-                                    Exportar
+                                    JSON
+                                </button>
+                            )}
+                            {onExportExcel && (
+                                <button
+                                    onClick={onExportExcel}
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all hover:opacity-90"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#059669' : '#047857',
+                                        color: '#ffffff'
+                                    }}
+                                    title="Descargar historial completo como Excel"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                    Excel
                                 </button>
                             )}
                             {onImportHistory && (

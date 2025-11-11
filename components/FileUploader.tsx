@@ -143,13 +143,13 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ files, setFiles, act
                     multiple
                     onChange={onFileChange}
                     className="hidden"
-                    accept=".pdf,.jpg,.jpeg,.png,.tiff,.txt"
+                    accept=".pdf,.jpg,.jpeg,.png,.tiff,.txt,.json"
                 />
                 <UploadCloudIcon className="w-10 h-10 mb-2" style={{ color: isHealthMode ? '#6ee7b7' : '#94a3b8' }} />
                 <p className="text-center" style={{ color: textColor }}>
                     <span className="font-semibold" style={{ color: accentColor }}>Haga clic para subir</span> o arrastre y suelte
                 </p>
-                <p className="text-xs text-center" style={{ color: textSecondary }}>PDF, JPG, PNG, TIFF, TXT (máx. 200MB/lote)</p>
+                <p className="text-xs text-center" style={{ color: textSecondary }}>PDF, JPG, PNG, TIFF, TXT, JSON (máx. 200MB/lote)</p>
             </div>
 
             {files.length > 0 && (

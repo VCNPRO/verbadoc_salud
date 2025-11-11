@@ -220,6 +220,150 @@ const defaultTemplates: any[] = [
     },
 ];
 
+// Archived health sector templates
+const archivedHealthTemplates: any[] = [
+    // Salud - Consentimiento Informado
+    {
+        id: 'template_consent',
+        name: 'Consentimiento Informado',
+        description: 'Extracción de datos de formularios de consentimiento médico',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        archived: true,
+        prompt: 'Extrae los datos del consentimiento informado: paciente, procedimiento, riesgos aceptados, y firmas.',
+        schema: [
+            { id: 'ci1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'ci2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'ci3', name: 'fecha_documento', type: 'STRING' },
+            { id: 'ci4', name: 'procedimiento_propuesto', type: 'STRING' },
+            { id: 'ci5', name: 'medico_responsable', type: 'STRING' },
+            { id: 'ci6', name: 'riesgos_explicados', type: 'ARRAY_OF_STRINGS' },
+            { id: 'ci7', name: 'alternativas_tratamiento', type: 'STRING' },
+            { id: 'ci8', name: 'paciente_firma', type: 'STRING' },
+            { id: 'ci9', name: 'medico_firma', type: 'STRING' },
+            { id: 'ci10', name: 'testigo_nombre', type: 'STRING' },
+        ]
+    },
+    // Salud - Parte de Urgencias
+    {
+        id: 'template_emergency',
+        name: 'Parte de Urgencias',
+        description: 'Extracción de datos de informes de urgencias hospitalarias',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        archived: true,
+        prompt: 'Extrae los datos del parte de urgencias: llegada, triaje, motivo consulta, constantes vitales, diagnóstico y destino.',
+        schema: [
+            { id: 'u1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'u2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'u3', name: 'fecha_hora_llegada', type: 'STRING' },
+            { id: 'u4', name: 'nivel_triaje', type: 'STRING' },
+            { id: 'u5', name: 'motivo_consulta', type: 'STRING' },
+            { id: 'u6', name: 'constantes_vitales', type: 'OBJECT', children: [
+                { id: 'u6a', name: 'presion_arterial', type: 'STRING' },
+                { id: 'u6b', name: 'frecuencia_cardiaca', type: 'NUMBER' },
+                { id: 'u6c', name: 'temperatura', type: 'NUMBER' },
+                { id: 'u6d', name: 'saturacion_oxigeno', type: 'NUMBER' },
+                { id: 'u6e', name: 'glasgow', type: 'NUMBER' },
+            ]},
+            { id: 'u7', name: 'exploracion', type: 'STRING' },
+            { id: 'u8', name: 'pruebas_realizadas', type: 'ARRAY_OF_STRINGS' },
+            { id: 'u9', name: 'diagnostico_urgencias', type: 'STRING' },
+            { id: 'u10', name: 'tratamiento_urgencias', type: 'STRING' },
+            { id: 'u11', name: 'destino_paciente', type: 'STRING' },
+        ]
+    },
+    // Salud - Informe Quirúrgico
+    {
+        id: 'template_surgery',
+        name: 'Informe Quirúrgico',
+        description: 'Extracción de datos de informes operatorios y cirugías',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        archived: true,
+        prompt: 'Extrae los datos del informe quirúrgico: datos del paciente, equipo quirúrgico, procedimiento, hallazgos y complicaciones.',
+        schema: [
+            { id: 'q1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'q2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'q3', name: 'fecha_cirugia', type: 'STRING' },
+            { id: 'q4', name: 'cirujano_principal', type: 'STRING' },
+            { id: 'q5', name: 'equipo_quirurgico', type: 'ARRAY_OF_STRINGS' },
+            { id: 'q6', name: 'tipo_anestesia', type: 'STRING' },
+            { id: 'q7', name: 'anestesiologo', type: 'STRING' },
+            { id: 'q8', name: 'diagnostico_preoperatorio', type: 'STRING' },
+            { id: 'q9', name: 'procedimiento_realizado', type: 'STRING' },
+            { id: 'q10', name: 'hallazgos_quirurgicos', type: 'STRING' },
+            { id: 'q11', name: 'tecnica_quirurgica', type: 'STRING' },
+            { id: 'q12', name: 'complicaciones', type: 'STRING' },
+            { id: 'q13', name: 'diagnostico_postoperatorio', type: 'STRING' },
+            { id: 'q14', name: 'recomendaciones_postoperatorias', type: 'STRING' },
+        ]
+    },
+    // Salud - Epicrisis
+    {
+        id: 'template_epicrisis',
+        name: 'Epicrisis / Resumen de Ingreso',
+        description: 'Resumen completo de hospitalización para historia clínica',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        archived: true,
+        prompt: 'Extrae los datos de la epicrisis: resumen completo del ingreso hospitalario incluyendo evolución, procedimientos y plan al alta.',
+        schema: [
+            { id: 'e1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'e2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'e3', name: 'fecha_ingreso', type: 'STRING' },
+            { id: 'e4', name: 'fecha_alta', type: 'STRING' },
+            { id: 'e5', name: 'dias_estancia', type: 'NUMBER' },
+            { id: 'e6', name: 'servicio_ingreso', type: 'STRING' },
+            { id: 'e7', name: 'motivo_ingreso', type: 'STRING' },
+            { id: 'e8', name: 'antecedentes_relevantes', type: 'STRING' },
+            { id: 'e9', name: 'evolucion_durante_ingreso', type: 'STRING' },
+            { id: 'e10', name: 'procedimientos_diagnosticos', type: 'ARRAY_OF_STRINGS' },
+            { id: 'e11', name: 'procedimientos_terapeuticos', type: 'ARRAY_OF_STRINGS' },
+            { id: 'e12', name: 'diagnosticos_finales', type: 'ARRAY_OF_STRINGS' },
+            { id: 'e13', name: 'tratamiento_al_alta', type: 'STRING' },
+            { id: 'e14', name: 'cuidados_domiciliarios', type: 'STRING' },
+            { id: 'e15', name: 'seguimiento', type: 'STRING' },
+        ]
+    },
+    // Salud - Historia Clínica Pediátrica
+    {
+        id: 'template_pediatric',
+        name: 'Historia Clínica Pediátrica',
+        description: 'Historia clínica específica para pacientes pediátricos',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        archived: true,
+        prompt: 'Extrae los datos de la historia clínica pediátrica: datos del niño, desarrollo, vacunación, y valoración pediátrica.',
+        schema: [
+            { id: 'ped1', name: 'nombre_paciente', type: 'STRING' },
+            { id: 'ped2', name: 'fecha_nacimiento', type: 'STRING' },
+            { id: 'ped3', name: 'edad', type: 'STRING' },
+            { id: 'ped4', name: 'sexo', type: 'STRING' },
+            { id: 'ped5', name: 'tutor_legal', type: 'STRING' },
+            { id: 'ped6', name: 'datos_nacimiento', type: 'OBJECT', children: [
+                { id: 'ped6a', name: 'semanas_gestacion', type: 'NUMBER' },
+                { id: 'ped6b', name: 'peso_nacer', type: 'NUMBER' },
+                { id: 'ped6c', name: 'talla_nacer', type: 'NUMBER' },
+                { id: 'ped6d', name: 'tipo_parto', type: 'STRING' },
+            ]},
+            { id: 'ped7', name: 'desarrollo_psicomotor', type: 'STRING' },
+            { id: 'ped8', name: 'vacunacion_completa', type: 'STRING' },
+            { id: 'ped9', name: 'alimentacion', type: 'STRING' },
+            { id: 'ped10', name: 'peso_actual', type: 'NUMBER' },
+            { id: 'ped11', name: 'talla_actual', type: 'NUMBER' },
+            { id: 'ped12', name: 'perimetro_cefalico', type: 'NUMBER' },
+            { id: 'ped13', name: 'alergias', type: 'ARRAY_OF_STRINGS' },
+            { id: 'ped14', name: 'valoracion_pediatrica', type: 'STRING' },
+        ]
+    },
+];
+
 export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema, currentPrompt, onSectorChange, currentSector, theme, isHealthMode }: TemplatesPanelProps) {
     const [customTemplates, setCustomTemplates] = useState<any[]>([]);
     const [showSaveDialog, setShowSaveDialog] = useState(false);
@@ -695,6 +839,50 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                                 <p>No hay plantillas para este sector</p>
                             </div>
                         )}
+
+                        {/* Archived Health Templates Section */}
+                        <div className="mt-6 border-t-2 pt-4" style={{ borderTopColor: borderColor }}>
+                            <button
+                                onClick={() => setShowArchived(!showArchived)}
+                                className="w-full flex items-center justify-between p-3 rounded-lg transition-all hover:opacity-80"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#fef3c7' : 'rgba(251, 191, 36, 0.1)',
+                                    borderWidth: '2px',
+                                    borderStyle: 'dashed',
+                                    borderColor: isHealthMode ? '#f59e0b' : '#fbbf24',
+                                }}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xl">📦</span>
+                                    <div className="text-left">
+                                        <h3 className="text-sm font-semibold" style={{ color: textColor }}>
+                                            Plantillas Archivadas ({archivedHealthTemplates.length})
+                                        </h3>
+                                        <p className="text-xs" style={{ color: textSecondary }}>
+                                            Plantillas especializadas del sector salud
+                                        </p>
+                                    </div>
+                                </div>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className={`h-5 w-5 transition-transform ${showArchived ? 'rotate-180' : ''}`}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    style={{ color: textColor }}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            {showArchived && (
+                                <div className="mt-3 space-y-2">
+                                    {archivedHealthTemplates.map(template => (
+                                        <TemplateCard key={template.id} template={template} />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
 
                         {/* Modelos Guardados */}
                         <div>

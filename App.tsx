@@ -141,9 +141,6 @@ function App() {
     const handleExtract = async () => {
         if (!activeFile) return;
 
-        // Lazy import the service
-        const { extractDataFromDocument } = await import('./services/geminiService.ts');
-
         setIsLoading(true);
         // Reset status for the current file
         setFiles(currentFiles =>
@@ -151,7 +148,19 @@ function App() {
         );
 
         try {
-            const extractedData = await extractDataFromDocument(activeFile.file, schema, prompt, selectedModel);
+            let extractedData: object;
+
+            // Check if file is JSON
+            if (activeFile.file.name.toLowerCase().endsWith('.json')) {
+                // Read and parse JSON directly
+                const text = await activeFile.file.text();
+                extractedData = JSON.parse(text);
+                console.log('📄 JSON file processed directly:', activeFile.file.name);
+            } else {
+                // Lazy import the service for non-JSON files
+                const { extractDataFromDocument } = await import('./services/geminiService.ts');
+                extractedData = await extractDataFromDocument(activeFile.file, schema, prompt, selectedModel);
+            }
 
             setFiles(currentFiles =>
                 currentFiles.map(f => f.id === activeFile.id ? { ...f, status: 'completado', extractedData: extractedData, error: undefined } : f)
@@ -181,10 +190,15 @@ function App() {
         const pendingFiles = files.filter(f => f.status === 'pendiente' || f.status === 'error');
         if (pendingFiles.length === 0) return;
 
-        // Lazy import the service
-        const { extractDataFromDocument } = await import('./services/geminiService.ts');
-
         setIsLoading(true);
+
+        // Lazy import the service (only if needed for non-JSON files)
+        const nonJsonFiles = pendingFiles.filter(f => !f.file.name.toLowerCase().endsWith('.json'));
+        let extractDataFromDocument: any = null;
+        if (nonJsonFiles.length > 0) {
+            const service = await import('./services/geminiService.ts');
+            extractDataFromDocument = service.extractDataFromDocument;
+        }
 
         for (const file of pendingFiles) {
             // Reset status for the current file
@@ -193,7 +207,17 @@ function App() {
             );
 
             try {
-                const extractedData = await extractDataFromDocument(file.file, schema, prompt, selectedModel);
+                let extractedData: object;
+
+                // Check if file is JSON
+                if (file.file.name.toLowerCase().endsWith('.json')) {
+                    // Read and parse JSON directly
+                    const text = await file.file.text();
+                    extractedData = JSON.parse(text);
+                    console.log('📄 JSON file processed directly:', file.file.name);
+                } else {
+                    extractedData = await extractDataFromDocument(file.file, schema, prompt, selectedModel);
+                }
 
                 setFiles(currentFiles =>
                     currentFiles.map(f => f.id === file.id ? { ...f, status: 'completado', extractedData: extractedData, error: undefined } : f)
@@ -328,7 +352,70 @@ function App() {
         link.download = `verbadoc-historial-${new Date().toISOString().split('T')[0]}.json`;
         link.click();
         URL.revokeObjectURL(url);
-        console.log('📥 Historial exportado');
+        console.log('📥 Historial exportado como JSON');
+    };
+
+    // Exportar historial como Excel
+    const handleExportExcel = async () => {
+        if (history.length === 0) {
+            alert('No hay historial para exportar');
+            return;
+        }
+
+        try {
+            // Lazy load xlsx library
+            const XLSX = await import('xlsx');
+
+            // Flatten the extracted data for Excel
+            const excelData = history.map((entry, index) => {
+                const flatData: any = {
+                    'Nº': index + 1,
+                    'Archivo': entry.fileName,
+                    'Fecha Extracción': new Date(entry.timestamp).toLocaleString('es-ES'),
+                };
+
+                // Flatten extracted data
+                const flattenObject = (obj: any, prefix = ''): any => {
+                    let result: any = {};
+                    for (const key in obj) {
+                        const value = obj[key];
+                        const newKey = prefix ? `${prefix}.${key}` : key;
+
+                        if (value && typeof value === 'object' && !Array.isArray(value)) {
+                            Object.assign(result, flattenObject(value, newKey));
+                        } else if (Array.isArray(value)) {
+                            result[newKey] = JSON.stringify(value);
+                        } else {
+                            result[newKey] = value;
+                        }
+                    }
+                    return result;
+                };
+
+                Object.assign(flatData, flattenObject(entry.extractedData));
+                return flatData;
+            });
+
+            // Create workbook and worksheet
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Resultados');
+
+            // Auto-size columns
+            const cols = Object.keys(excelData[0] || {}).map(key => ({
+                wch: Math.max(key.length, 15)
+            }));
+            worksheet['!cols'] = cols;
+
+            // Generate file and download
+            const fileName = `verbadoc-resultados-${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+
+            console.log('📊 Historial exportado como Excel');
+        } catch (error) {
+            console.error('Error exportando a Excel:', error);
+            alert('Error al exportar a Excel');
+        }
     };
 
     // Importar historial desde JSON
@@ -632,6 +719,7 @@ function App() {
                                 isHealthMode={isHealthMode}
                                 onClearHistory={handleClearHistory}
                                 onExportHistory={handleExportHistory}
+                                onExportExcel={handleExportExcel}
                                 onImportHistory={handleImportHistory}
                             />
                         </div>
