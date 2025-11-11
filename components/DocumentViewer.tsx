@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { XIcon, DownloadIcon } from './Icons';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface DocumentViewerProps {
     isOpen: boolean;
@@ -19,6 +21,8 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
     const [content, setContent] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [generatingPdf, setGeneratingPdf] = useState(false);
+    const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (isOpen && documentUrl) {
@@ -43,16 +47,112 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
         }
     }, [isOpen, documentUrl]);
 
-    const handleDownload = () => {
-        const blob = new Blob([content], { type: 'text/markdown' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = downloadFilename || 'documento.md';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+    const handleDownloadPDF = async () => {
+        if (!contentRef.current) return;
+
+        setGeneratingPdf(true);
+
+        try {
+            // Create a temporary container for PDF rendering with white background
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.top = '0';
+            tempContainer.style.width = '210mm'; // A4 width
+            tempContainer.style.backgroundColor = 'white';
+            tempContainer.style.padding = '20mm';
+            tempContainer.style.fontFamily = 'Arial, sans-serif';
+
+            // Clone and format content for PDF
+            const contentForPdf = formatMarkdownForPDF(content);
+            tempContainer.innerHTML = contentForPdf;
+
+            document.body.appendChild(tempContainer);
+
+            // Generate PDF
+            const canvas = await html2canvas(tempContainer, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = pdfWidth;
+            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            // Add first page
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pdfHeight;
+
+            // Add additional pages if needed
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pdfHeight;
+            }
+
+            // Download PDF
+            const pdfFilename = downloadFilename
+                ? downloadFilename.replace('.md', '.pdf')
+                : 'documento.pdf';
+            pdf.save(pdfFilename);
+
+            // Cleanup
+            document.body.removeChild(tempContainer);
+            setGeneratingPdf(false);
+        } catch (err) {
+            console.error('Error generating PDF:', err);
+            setError('Error al generar el PDF');
+            setGeneratingPdf(false);
+        }
+    };
+
+    const formatMarkdownForPDF = (text: string): string => {
+        let html = text;
+
+        // Remove emojis for better PDF compatibility
+        html = html.replace(/[\u{1F300}-\u{1F9FF}]/gu, '');
+
+        // Headers
+        html = html.replace(/^### (.*$)/gim, '<h3 style="font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 20px; margin-bottom: 12px;">$1</h3>');
+        html = html.replace(/^## (.*$)/gim, '<h2 style="font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 28px; margin-bottom: 16px;">$1</h2>');
+        html = html.replace(/^# (.*$)/gim, '<h1 style="font-size: 24px; font-weight: 700; color: #0f172a; margin-top: 32px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">$1</h1>');
+
+        // Bold
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 600; color: #0f172a;">$1</strong>');
+
+        // Code blocks
+        html = html.replace(/```([\s\S]*?)```/g, '<pre style="background-color: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; overflow-x: auto; margin: 12px 0; font-family: monospace; font-size: 11px; color: #334155;">$1</pre>');
+
+        // Inline code
+        html = html.replace(/`([^`]+)`/g, '<code style="background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #0ea5e9; font-size: 13px; font-family: monospace;">$1</code>');
+
+        // Lists
+        html = html.replace(/^\- (.*$)/gim, '<li style="margin-left: 20px; color: #334155; margin-bottom: 4px;">• $1</li>');
+        html = html.replace(/^\* (.*$)/gim, '<li style="margin-left: 20px; color: #334155; margin-bottom: 4px;">• $1</li>');
+        html = html.replace(/^\d+\. (.*$)/gim, '<li style="margin-left: 20px; color: #334155; margin-bottom: 4px; list-style-type: decimal;">$1</li>');
+
+        // Links (keep as text in PDF)
+        html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<span style="color: #0ea5e9; text-decoration: underline;">$1</span>');
+
+        // Line breaks
+        html = html.replace(/\n\n/g, '<br/><br/>');
+        html = html.replace(/\n/g, '<br/>');
+
+        // Horizontal rules
+        html = html.replace(/^---$/gim, '<hr style="border: none; border-top: 1px solid #cbd5e1; margin: 24px 0;"/>');
+
+        // Wrap in styled div
+        return `<div style="color: #334155; font-size: 14px; line-height: 1.7;">${html}</div>`;
     };
 
     // Simple markdown to HTML converter (basic formatting)
@@ -114,11 +214,22 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
                     <div className="flex items-center gap-2 flex-shrink-0">
                         {content && (
                             <button
-                                onClick={handleDownload}
-                                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
-                                title="Descargar documento"
+                                onClick={handleDownloadPDF}
+                                disabled={generatingPdf}
+                                className="flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-600 text-white rounded-lg transition-colors text-sm font-medium"
+                                title="Descargar PDF"
                             >
-                                <DownloadIcon className="w-5 h-5 md:w-6 md:h-6 text-slate-300" />
+                                {generatingPdf ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <span className="hidden md:inline">Generando...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <DownloadIcon className="w-4 h-4" />
+                                        <span className="hidden md:inline">Descargar PDF</span>
+                                    </>
+                                )}
                             </button>
                         )}
                         <button
@@ -151,9 +262,20 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
 
                     {!loading && !error && content && (
                         <div
+                            ref={contentRef}
                             className="prose prose-invert max-w-none text-slate-300 text-sm md:text-base leading-relaxed"
                             dangerouslySetInnerHTML={{ __html: formatMarkdown(content) }}
                         />
+                    )}
+
+                    {generatingPdf && (
+                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center">
+                            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 text-center">
+                                <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                <p className="text-slate-200 font-semibold mb-2">Generando PDF...</p>
+                                <p className="text-slate-400 text-sm">Esto puede tomar unos segundos</p>
+                            </div>
+                        </div>
                     )}
                 </div>
 

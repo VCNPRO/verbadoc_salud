@@ -552,7 +552,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
 
                             <div className="mt-3 bg-blue-900/20 p-2 rounded border border-blue-700/30">
                                 <p className="text-xs text-blue-200">
-                                    💡 <strong>Tip:</strong> Cada guía incluye un botón de descarga. Para convertir a PDF, usa un visualizador Markdown como <a href="https://dillinger.io" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">dillinger.io</a> y exporta a PDF
+                                    💡 <strong>Tip:</strong> Cada guía incluye un botón "Descargar PDF" para guardar el documento directamente en formato PDF
                                 </p>
                             </div>
                         </div>
