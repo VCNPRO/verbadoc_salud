@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { XIcon, InformationCircleIcon } from './Icons';
+import { DocumentViewer } from './DocumentViewer';
 
 interface HelpModalProps {
     isOpen: boolean;
@@ -7,9 +8,30 @@ interface HelpModalProps {
 }
 
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
+    const [documentViewerOpen, setDocumentViewerOpen] = useState(false);
+    const [currentDocument, setCurrentDocument] = useState<{ url: string; title: string; filename: string } | null>(null);
+
+    const openDocument = (docType: 'quick' | 'complete') => {
+        if (docType === 'quick') {
+            setCurrentDocument({
+                url: '/docs/GUIA_RAPIDA.md',
+                title: 'Guía Rápida',
+                filename: 'GUIA_RAPIDA_VerbaDoc_Salud.md'
+            });
+        } else {
+            setCurrentDocument({
+                url: '/docs/GUIA_USUARIO_VERBADOC_SALUD.md',
+                title: 'Guía de Usuario Completa',
+                filename: 'GUIA_USUARIO_VerbaDoc_Salud.md'
+            });
+        }
+        setDocumentViewerOpen(true);
+    };
+
     if (!isOpen) return null;
 
     return (
+        <>
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-slate-800 rounded-lg border border-slate-700 w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
                 {/* Header */}
@@ -507,52 +529,30 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                                 <div className="bg-slate-800/50 p-3 rounded border border-slate-700/30">
                                     <h4 className="text-sm font-semibold text-cyan-400 mb-2">📄 Guía Rápida</h4>
                                     <p className="text-xs text-slate-400 mb-3">Referencia condensada de características principales</p>
-                                    <div className="flex gap-2">
-                                        <a
-                                            href="https://github.com/VCNPRO/verbadoc_salud/blob/main/GUIA_RAPIDA.md"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex-1 text-center px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-xs rounded transition-colors"
-                                        >
-                                            Ver Online
-                                        </a>
-                                        <a
-                                            href="https://raw.githubusercontent.com/VCNPRO/verbadoc_salud/main/GUIA_RAPIDA.md"
-                                            download="GUIA_RAPIDA_VerbaDoc_Salud.md"
-                                            className="flex-1 text-center px-3 py-1.5 bg-slate-600 hover:bg-slate-700 text-white text-xs rounded transition-colors"
-                                        >
-                                            Descargar
-                                        </a>
-                                    </div>
+                                    <button
+                                        onClick={() => openDocument('quick')}
+                                        className="w-full text-center px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm rounded transition-colors font-medium"
+                                    >
+                                        📖 Leer Guía Rápida
+                                    </button>
                                 </div>
 
                                 {/* Guía Detallada */}
                                 <div className="bg-slate-800/50 p-3 rounded border border-slate-700/30">
                                     <h4 className="text-sm font-semibold text-emerald-400 mb-2">📖 Guía Completa</h4>
                                     <p className="text-xs text-slate-400 mb-3">Manual detallado (80 páginas) con casos de uso y FAQ</p>
-                                    <div className="flex gap-2">
-                                        <a
-                                            href="https://github.com/VCNPRO/verbadoc_salud/blob/main/GUIA_USUARIO_VERBADOC_SALUD.md"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex-1 text-center px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded transition-colors"
-                                        >
-                                            Ver Online
-                                        </a>
-                                        <a
-                                            href="https://raw.githubusercontent.com/VCNPRO/verbadoc_salud/main/GUIA_USUARIO_VERBADOC_SALUD.md"
-                                            download="GUIA_USUARIO_VerbaDoc_Salud.md"
-                                            className="flex-1 text-center px-3 py-1.5 bg-slate-600 hover:bg-slate-700 text-white text-xs rounded transition-colors"
-                                        >
-                                            Descargar
-                                        </a>
-                                    </div>
+                                    <button
+                                        onClick={() => openDocument('complete')}
+                                        className="w-full text-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded transition-colors font-medium"
+                                    >
+                                        📚 Leer Guía Completa
+                                    </button>
                                 </div>
                             </div>
 
                             <div className="mt-3 bg-blue-900/20 p-2 rounded border border-blue-700/30">
                                 <p className="text-xs text-blue-200">
-                                    💡 <strong>Tip:</strong> Para convertir a PDF, abre el archivo descargado en un visualizador Markdown online como <a href="https://dillinger.io" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">dillinger.io</a> y exporta a PDF
+                                    💡 <strong>Tip:</strong> Cada guía incluye un botón de descarga. Para convertir a PDF, usa un visualizador Markdown como <a href="https://dillinger.io" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">dillinger.io</a> y exporta a PDF
                                 </p>
                             </div>
                         </div>
@@ -573,5 +573,17 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 </div>
             </div>
         </div>
+
+        {/* Document Viewer */}
+        {currentDocument && (
+            <DocumentViewer
+                isOpen={documentViewerOpen}
+                onClose={() => setDocumentViewerOpen(false)}
+                documentUrl={currentDocument.url}
+                title={currentDocument.title}
+                downloadFilename={currentDocument.filename}
+            />
+        )}
+        </>
     );
 };
