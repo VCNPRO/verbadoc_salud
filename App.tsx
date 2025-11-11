@@ -464,15 +464,15 @@ function App() {
         <div
             className="min-h-screen font-sans transition-colors duration-500 flex flex-col"
             style={{
-                backgroundColor: isDarkMode ? '#0f172a' : '#ecfdf5',
-                color: isDarkMode ? '#e2e8f0' : '#064e3b'
+                backgroundColor: isDarkMode ? '#0f172a' : '#f8fafc',
+                color: isDarkMode ? '#e2e8f0' : '#0f172a'
             }}
         >
             <header
-                className="backdrop-blur-sm border-b-2 sticky top-0 z-10 transition-colors duration-500 shadow-md"
+                className="backdrop-blur-sm border-b-2 sticky top-0 z-10 transition-colors duration-500 shadow-lg"
                 style={{
-                    backgroundColor: isDarkMode ? 'rgba(2, 6, 23, 0.7)' : '#ffffff',
-                    borderBottomColor: isDarkMode ? 'rgba(51, 65, 85, 0.5)' : '#6ee7b7'
+                    backgroundColor: isDarkMode ? 'rgba(2, 6, 23, 0.9)' : '#ffffff',
+                    borderBottomColor: isDarkMode ? 'rgba(51, 65, 85, 0.5)' : '#10b981'
                 }}
             >
                 <div className="px-4 sm:px-6 lg:px-8">
@@ -482,7 +482,7 @@ function App() {
                                 <h1
                                     className="text-2xl sm:text-3xl font-orbitron font-bold tracking-wide transition-colors duration-500"
                                     style={{
-                                        color: isDarkMode ? '#f1f5f9' : '#047857'
+                                        color: isDarkMode ? '#f1f5f9' : '#059669'
                                     }}
                                 >
                                     verbadoc
@@ -490,8 +490,8 @@ function App() {
                                 <span
                                     className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
                                     style={{
-                                        backgroundColor: isHealthMode ? '#d1fae5' : '#334155',
-                                        color: isHealthMode ? '#047857' : '#f1f5f9'
+                                        backgroundColor: isHealthMode ? '#a7f3d0' : '#334155',
+                                        color: isHealthMode ? '#065f46' : '#f1f5f9'
                                     }}
                                 >
                                     🏥 Sector Salud
@@ -499,7 +499,7 @@ function App() {
                                 <span
                                     className="text-sm font-sans font-normal transition-colors duration-500"
                                     style={{
-                                        color: isDarkMode ? '#94a3b8' : '#064e3b'
+                                        color: isDarkMode ? '#94a3b8' : '#475569'
                                     }}
                                 >
                                     trabajando para
@@ -507,8 +507,8 @@ function App() {
                                 <span
                                     className="font-sans font-bold text-sm px-2 py-0.5 rounded-md transition-colors cursor-pointer hover:opacity-80"
                                     style={{
-                                        backgroundColor: isHealthMode ? '#d1fae5' : '#1e293b',
-                                        color: isHealthMode ? '#047857' : '#06b6d4'
+                                        backgroundColor: isHealthMode ? '#a7f3d0' : '#1e293b',
+                                        color: isHealthMode ? '#065f46' : '#06b6d4'
                                     }}
                                     onClick={() => {
                                         const newName = prompt('Ingrese el nombre del cliente:', clientName);
@@ -538,9 +538,9 @@ function App() {
                                     onChange={(e) => setSelectedModel(e.target.value as GeminiModel)}
                                     className="text-sm px-3 py-1.5 rounded-md border-2 focus:outline-none focus:ring-2 transition-all"
                                     style={{
-                                        backgroundColor: isHealthMode ? '#f9fafb' : '#1e293b',
-                                        borderColor: isHealthMode ? '#6ee7b7' : '#475569',
-                                        color: isHealthMode ? '#047857' : '#f1f5f9'
+                                        backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                        borderColor: isHealthMode ? '#10b981' : '#475569',
+                                        color: isHealthMode ? '#059669' : '#f1f5f9'
                                     }}
                                 >
                                     {AVAILABLE_MODELS.map(model => (
@@ -556,9 +556,9 @@ function App() {
                                 onClick={() => setIsDarkMode(!isDarkMode)}
                                 className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
                                 style={{
-                                    backgroundColor: isHealthMode ? '#f0fdf4' : '#1e293b',
-                                    borderColor: isHealthMode ? '#6ee7b7' : '#475569',
-                                    color: isHealthMode ? '#047857' : '#fbbf24'
+                                    backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                    borderColor: isHealthMode ? '#10b981' : '#475569',
+                                    color: isHealthMode ? '#059669' : '#fbbf24'
                                 }}
                                 title={isDarkMode ? "Cambiar a modo día" : "Cambiar a modo noche"}
                             >
@@ -578,9 +578,9 @@ function App() {
                                 onClick={() => setIsHelpModalOpen(true)}
                                 className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
                                 style={{
-                                    backgroundColor: isHealthMode ? '#f0fdf4' : '#1e293b',
-                                    borderColor: isHealthMode ? '#6ee7b7' : '#475569',
-                                    color: isHealthMode ? '#047857' : '#60a5fa'
+                                    backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                    borderColor: isHealthMode ? '#10b981' : '#475569',
+                                    color: isHealthMode ? '#059669' : '#60a5fa'
                                 }}
                                 title="Ayuda y Guía de Usuario"
                             >
@@ -594,9 +594,9 @@ function App() {
                                 onClick={() => setIsSettingsModalOpen(true)}
                                 className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
                                 style={{
-                                    backgroundColor: isHealthMode ? '#f0fdf4' : '#1e293b',
-                                    borderColor: isHealthMode ? '#6ee7b7' : '#475569',
-                                    color: isHealthMode ? '#047857' : '#60a5fa'
+                                    backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                    borderColor: isHealthMode ? '#10b981' : '#475569',
+                                    color: isHealthMode ? '#059669' : '#60a5fa'
                                 }}
                                 title="Configuración y Cumplimiento Legal"
                             >
@@ -611,8 +611,8 @@ function App() {
                                 onClick={() => window.location.reload()}
                                 className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
                                 style={{
-                                    backgroundColor: isHealthMode ? '#fef2f2' : '#1e293b',
-                                    borderColor: isHealthMode ? '#fca5a5' : '#475569',
+                                    backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                    borderColor: isHealthMode ? '#ef4444' : '#475569',
                                     color: isHealthMode ? '#dc2626' : '#f87171'
                                 }}
                                 title="Salir"
@@ -626,8 +626,8 @@ function App() {
                 </div>
             </header>
 
-            <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6" style={{height: 'calc(100vh - 112px)'}}>
+            <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[calc(100vh-16rem)]">
                     <div className="lg:col-span-3 h-full">
                          <FileUploader
                             files={files}
@@ -663,9 +663,9 @@ function App() {
                             {history.length > 0 && (
                                 <button
                                     onClick={() => setShowResultsExpanded(true)}
-                                    className="mb-2 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 hover:opacity-90 hover:scale-105 shadow-md"
+                                    className="mb-2 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 hover:opacity-90 hover:scale-105 shadow-lg"
                                     style={{
-                                        backgroundColor: isHealthMode ? '#047857' : '#06b6d4',
+                                        backgroundColor: isHealthMode ? '#10b981' : '#06b6d4',
                                         color: '#ffffff'
                                     }}
                                 >
@@ -720,14 +720,14 @@ function App() {
                     >
                         {/* Header del modal */}
                         <div
-                            className="flex items-center justify-between p-4 border-b"
+                            className="flex items-center justify-between p-4 border-b-2"
                             style={{
-                                backgroundColor: isHealthMode ? '#f0fdf4' : 'rgba(15, 23, 42, 0.5)',
-                                borderBottomColor: isHealthMode ? '#6ee7b7' : '#475569'
+                                backgroundColor: isHealthMode ? '#f8fafc' : 'rgba(15, 23, 42, 0.5)',
+                                borderBottomColor: isHealthMode ? '#10b981' : '#475569'
                             }}
                         >
-                            <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: isHealthMode ? '#047857' : '#f1f5f9' }}>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: isHealthMode ? '#047857' : '#06b6d4' }}>
+                            <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: isHealthMode ? '#059669' : '#f1f5f9' }}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: isHealthMode ? '#10b981' : '#06b6d4' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 Resultados de Extracción
@@ -766,49 +766,49 @@ function App() {
             <footer
                 className="border-t-2 py-6 px-8 mt-auto"
                 style={{
-                    backgroundColor: isHealthMode ? '#f9fafb' : '#0f172a',
-                    borderTopColor: isHealthMode ? '#d1d5db' : '#334155',
+                    backgroundColor: isHealthMode ? '#ffffff' : '#0f172a',
+                    borderTopColor: isHealthMode ? '#10b981' : '#334155',
                 }}
             >
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                         {/* Company Info */}
                         <div>
-                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#047857' : '#06b6d4' }}>
+                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#059669' : '#10b981' }}>
                                 VerbaDoc Salud
                             </h4>
-                            <p className="text-sm" style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}>
+                            <p className="text-sm" style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}>
                                 Extracción inteligente de datos médicos con IA procesada en Europa
                             </p>
                         </div>
 
                         {/* Legal Links */}
                         <div>
-                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#047857' : '#06b6d4' }}>
+                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#059669' : '#10b981' }}>
                                 Legal
                             </h4>
                             <div className="space-y-1">
                                 <a
                                     href="#"
                                     onClick={(e) => { e.preventDefault(); setIsSettingsModalOpen(true); }}
-                                    className="block text-sm hover:underline"
-                                    style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}
+                                    className="block text-sm hover:underline transition-colors"
+                                    style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}
                                 >
                                     Política de Privacidad
                                 </a>
                                 <a
                                     href="#"
                                     onClick={(e) => { e.preventDefault(); setIsSettingsModalOpen(true); }}
-                                    className="block text-sm hover:underline"
-                                    style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}
+                                    className="block text-sm hover:underline transition-colors"
+                                    style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}
                                 >
                                     Términos y Condiciones
                                 </a>
                                 <a
                                     href="#"
                                     onClick={(e) => { e.preventDefault(); setIsSettingsModalOpen(true); }}
-                                    className="block text-sm hover:underline"
-                                    style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}
+                                    className="block text-sm hover:underline transition-colors"
+                                    style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}
                                 >
                                     Cumplimiento RGPD
                                 </a>
@@ -817,21 +817,21 @@ function App() {
 
                         {/* Contact */}
                         <div>
-                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#047857' : '#06b6d4' }}>
+                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#059669' : '#10b981' }}>
                                 Contacto
                             </h4>
                             <div className="space-y-1">
                                 <a
                                     href="mailto:legal@verbadoc.com"
-                                    className="block text-sm hover:underline"
-                                    style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}
+                                    className="block text-sm hover:underline transition-colors"
+                                    style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}
                                 >
                                     legal@verbadoc.com
                                 </a>
                                 <a
                                     href="mailto:soporte@verbadoc.com"
-                                    className="block text-sm hover:underline"
-                                    style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}
+                                    className="block text-sm hover:underline transition-colors"
+                                    style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}
                                 >
                                     soporte@verbadoc.com
                                 </a>
@@ -840,12 +840,12 @@ function App() {
                     </div>
 
                     {/* Copyright */}
-                    <div className="border-t pt-4" style={{ borderTopColor: isHealthMode ? '#d1d5db' : '#334155' }}>
+                    <div className="border-t pt-4" style={{ borderTopColor: isHealthMode ? '#e5e7eb' : '#334155' }}>
                         <div className="flex flex-col md:flex-row justify-between items-center gap-2">
-                            <p className="text-xs" style={{ color: isHealthMode ? '#6b7280' : '#64748b' }}>
+                            <p className="text-xs" style={{ color: isHealthMode ? '#64748b' : '#64748b' }}>
                                 © 2025 VerbaDoc Salud. Todos los derechos reservados. • Procesamiento 100% en Europa 🇪🇺
                             </p>
-                            <p className="text-xs" style={{ color: isHealthMode ? '#6b7280' : '#64748b' }}>
+                            <p className="text-xs" style={{ color: isHealthMode ? '#64748b' : '#64748b' }}>
                                 v1.0 • Powered by Google Gemini AI (Bélgica)
                             </p>
                         </div>
