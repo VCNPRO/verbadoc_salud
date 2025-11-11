@@ -478,9 +478,9 @@ function App() {
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2.5">
                                 <h1
-                                    className="text-xl sm:text-2xl font-orbitron tracking-wider transition-colors duration-500"
+                                    className="text-2xl sm:text-3xl font-orbitron font-bold tracking-wide transition-colors duration-500"
                                     style={{
                                         color: isDarkMode ? '#f1f5f9' : '#047857'
                                     }}
@@ -488,7 +488,7 @@ function App() {
                                     verbadoc
                                 </h1>
                                 <span
-                                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-sm font-medium"
+                                    className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
                                     style={{
                                         backgroundColor: isHealthMode ? '#d1fae5' : '#334155',
                                         color: isHealthMode ? '#047857' : '#f1f5f9'
@@ -497,7 +497,7 @@ function App() {
                                     🏥 Sector Salud
                                 </span>
                                 <span
-                                    className="text-base font-sans font-normal transition-colors duration-500"
+                                    className="text-sm font-sans font-normal transition-colors duration-500"
                                     style={{
                                         color: isDarkMode ? '#94a3b8' : '#064e3b'
                                     }}
@@ -505,7 +505,7 @@ function App() {
                                     trabajando para
                                 </span>
                                 <span
-                                    className="font-sans font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer hover:opacity-80"
+                                    className="font-sans font-bold text-sm px-2 py-0.5 rounded-md transition-colors cursor-pointer hover:opacity-80"
                                     style={{
                                         backgroundColor: isHealthMode ? '#d1fae5' : '#1e293b',
                                         color: isHealthMode ? '#047857' : '#06b6d4'
