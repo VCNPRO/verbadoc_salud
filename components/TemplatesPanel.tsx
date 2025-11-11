@@ -30,60 +30,194 @@ interface TemplatesPanelProps {
 }
 
 const defaultTemplates: any[] = [
-    // Salud
+    // Salud - Resultados de Laboratorio
     {
-        id: 'template_001_hc_completa',
-        nombre: 'Historia Clínica Completa',
-        descripcion: 'Formato completo de Historia Clínica según normas internacionales HL7',
-        categoria: 'historia_clinica_completa',
-        tipo: 'predefinida',
-        version: '1.0.0',
-        estandares_aplicados: ['HL7_v2', 'FHIR_R4'],
-        metadatos: {
-          departamento: 'Todos',
-          nivel_complejidad: 'avanzada',
-          requiere_firma_digital: true,
-          confidencialidad_nivel: 'altamente_confidencial',
-        },
-        secciones: [
-          {
-            id: 'seccion_001',
-            nombre: 'Datos de Filiación',
-            descripcion: 'Identificación del paciente y datos de contacto',
-            orden: 1,
-            obligatoria: true,
-            campos: [
-              {
-                nombre_campo: 'nombre_completo',
-                etiqueta: 'Nombre Completo',
-                tipo_dato: 'texto',
-                orden: 1,
-                obligatorio: true,
-                mapeo_estandares: {
-                  hl7_field: 'PID-5',
-                  fhir_path: 'Patient.name.text',
-                },
-                validaciones: {
-                  longitud_minima: 5,
-                  longitud_maxima: 100,
-                  patron_regex: '^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$',
-                },
-                configuracion_extraccion: {
-                  buscar_automaticamente: true,
-                  metodo_extraccion: ['ocr', 'nlp'],
-                },
-                security: {
-                  is_phi: true,
-                  phi_sensitivity: 'muy_alta',
-                  hipaa_identifier: true,
-                },
-              },
-            ],
-          },
-        ],
+        id: 'template_lab_results',
+        name: 'Resultados de Laboratorio',
+        description: 'Extracción de datos de análisis de laboratorio clínico',
+        type: 'modelo',
+        icon: 'document',
         sector: 'salud',
-        icon: 'document'
-      }
+        prompt: 'Extrae los datos del análisis de laboratorio: información del paciente, fecha, tipo de análisis, y todos los resultados con sus valores de referencia.',
+        schema: [
+            { id: 'f1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'f2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'f3', name: 'fecha_extraccion', type: 'STRING' },
+            { id: 'f4', name: 'fecha_informe', type: 'STRING' },
+            { id: 'f5', name: 'laboratorio', type: 'STRING' },
+            { id: 'f6', name: 'medico_solicitante', type: 'STRING' },
+            {
+                id: 'f7',
+                name: 'resultados',
+                type: 'ARRAY_OF_OBJECTS',
+                children: [
+                    { id: 'f7a', name: 'parametro', type: 'STRING' },
+                    { id: 'f7b', name: 'resultado', type: 'STRING' },
+                    { id: 'f7c', name: 'unidad', type: 'STRING' },
+                    { id: 'f7d', name: 'valor_referencia', type: 'STRING' },
+                ]
+            },
+            { id: 'f8', name: 'observaciones', type: 'STRING' },
+        ]
+    },
+    // Salud - Receta Médica
+    {
+        id: 'template_prescription',
+        name: 'Receta Médica',
+        description: 'Extracción de prescripciones y medicamentos recetados',
+        type: 'modelo',
+        icon: 'receipt',
+        sector: 'salud',
+        prompt: 'Extrae los datos de la receta médica: información del paciente, médico prescriptor, medicamentos prescritos con dosis y duración.',
+        schema: [
+            { id: 'p1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'p2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'p3', name: 'fecha_prescripcion', type: 'STRING' },
+            { id: 'p4', name: 'medico_nombre', type: 'STRING' },
+            { id: 'p5', name: 'medico_colegiado', type: 'STRING' },
+            {
+                id: 'p6',
+                name: 'medicamentos',
+                type: 'ARRAY_OF_OBJECTS',
+                children: [
+                    { id: 'p6a', name: 'nombre_medicamento', type: 'STRING' },
+                    { id: 'p6b', name: 'dosis', type: 'STRING' },
+                    { id: 'p6c', name: 'frecuencia', type: 'STRING' },
+                    { id: 'p6d', name: 'duracion', type: 'STRING' },
+                    { id: 'p6e', name: 'indicaciones', type: 'STRING' },
+                ]
+            },
+            { id: 'p7', name: 'diagnostico', type: 'STRING' },
+        ]
+    },
+    // Salud - Certificado Médico
+    {
+        id: 'template_medical_certificate',
+        name: 'Certificado Médico',
+        description: 'Extracción de certificados médicos y bajas laborales',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        prompt: 'Extrae los datos del certificado médico: datos del paciente, médico certificante, diagnóstico, período de reposo y restricciones.',
+        schema: [
+            { id: 'c1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'c2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'c3', name: 'fecha_emision', type: 'STRING' },
+            { id: 'c4', name: 'medico_nombre', type: 'STRING' },
+            { id: 'c5', name: 'medico_colegiado', type: 'STRING' },
+            { id: 'c6', name: 'diagnostico', type: 'STRING' },
+            { id: 'c7', name: 'fecha_inicio_reposo', type: 'STRING' },
+            { id: 'c8', name: 'fecha_fin_reposo', type: 'STRING' },
+            { id: 'c9', name: 'dias_reposo', type: 'NUMBER' },
+            { id: 'c10', name: 'restricciones', type: 'ARRAY_OF_STRINGS' },
+            { id: 'c11', name: 'observaciones', type: 'STRING' },
+        ]
+    },
+    // Salud - Informe Radiológico
+    {
+        id: 'template_radiology',
+        name: 'Informe Radiológico',
+        description: 'Extracción de informes de radiología y diagnóstico por imagen',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        prompt: 'Extrae los datos del informe radiológico: información del paciente, tipo de estudio, hallazgos, impresión diagnóstica y conclusiones.',
+        schema: [
+            { id: 'r1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'r2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'r3', name: 'fecha_estudio', type: 'STRING' },
+            { id: 'r4', name: 'tipo_estudio', type: 'STRING' },
+            { id: 'r5', name: 'zona_anatomica', type: 'STRING' },
+            { id: 'r6', name: 'tecnica_utilizada', type: 'STRING' },
+            { id: 'r7', name: 'indicacion_clinica', type: 'STRING' },
+            { id: 'r8', name: 'hallazgos', type: 'STRING' },
+            { id: 'r9', name: 'impresion_diagnostica', type: 'STRING' },
+            { id: 'r10', name: 'radiologo', type: 'STRING' },
+        ]
+    },
+    // Salud - Certificado de Vacunación
+    {
+        id: 'template_vaccination',
+        name: 'Certificado de Vacunación',
+        description: 'Extracción de datos de certificados y cartillas de vacunación',
+        type: 'modelo',
+        icon: 'receipt',
+        sector: 'salud',
+        prompt: 'Extrae los datos del certificado de vacunación: información del paciente y listado completo de vacunas aplicadas con fechas y lotes.',
+        schema: [
+            { id: 'v1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'v2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'v3', name: 'fecha_nacimiento', type: 'STRING' },
+            {
+                id: 'v4',
+                name: 'vacunas',
+                type: 'ARRAY_OF_OBJECTS',
+                children: [
+                    { id: 'v4a', name: 'vacuna', type: 'STRING' },
+                    { id: 'v4b', name: 'fecha_aplicacion', type: 'STRING' },
+                    { id: 'v4c', name: 'dosis', type: 'STRING' },
+                    { id: 'v4d', name: 'lote', type: 'STRING' },
+                    { id: 'v4e', name: 'centro_vacunacion', type: 'STRING' },
+                ]
+            },
+            { id: 'v5', name: 'proxima_vacuna', type: 'STRING' },
+            { id: 'v6', name: 'fecha_proxima_dosis', type: 'STRING' },
+        ]
+    },
+    // Salud - Consulta Médica
+    {
+        id: 'template_consultation',
+        name: 'Consulta Médica',
+        description: 'Extracción de datos de consultas y evoluciones médicas',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        prompt: 'Extrae los datos de la consulta médica: motivo de consulta, antecedentes, exploración física, diagnóstico y plan de tratamiento.',
+        schema: [
+            { id: 'm1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'm2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'm3', name: 'fecha_consulta', type: 'STRING' },
+            { id: 'm4', name: 'medico', type: 'STRING' },
+            { id: 'm5', name: 'motivo_consulta', type: 'STRING' },
+            { id: 'm6', name: 'antecedentes', type: 'STRING' },
+            { id: 'm7', name: 'exploracion_fisica', type: 'STRING' },
+            { id: 'm8', name: 'signos_vitales', type: 'OBJECT', children: [
+                { id: 'm8a', name: 'presion_arterial', type: 'STRING' },
+                { id: 'm8b', name: 'frecuencia_cardiaca', type: 'NUMBER' },
+                { id: 'm8c', name: 'temperatura', type: 'NUMBER' },
+                { id: 'm8d', name: 'saturacion_oxigeno', type: 'NUMBER' },
+            ]},
+            { id: 'm9', name: 'diagnostico', type: 'STRING' },
+            { id: 'm10', name: 'plan_tratamiento', type: 'STRING' },
+            { id: 'm11', name: 'proxima_cita', type: 'STRING' },
+        ]
+    },
+    // Salud - Resumen de Alta Hospitalaria
+    {
+        id: 'template_discharge',
+        name: 'Resumen de Alta Hospitalaria',
+        description: 'Extracción de informes de alta y evolución hospitalaria',
+        type: 'modelo',
+        icon: 'document',
+        sector: 'salud',
+        prompt: 'Extrae los datos del informe de alta hospitalaria: motivo de ingreso, evolución, procedimientos realizados, diagnósticos y recomendaciones al alta.',
+        schema: [
+            { id: 'd1', name: 'paciente_nombre', type: 'STRING' },
+            { id: 'd2', name: 'paciente_dni', type: 'STRING' },
+            { id: 'd3', name: 'fecha_ingreso', type: 'STRING' },
+            { id: 'd4', name: 'fecha_alta', type: 'STRING' },
+            { id: 'd5', name: 'servicio', type: 'STRING' },
+            { id: 'd6', name: 'medico_responsable', type: 'STRING' },
+            { id: 'd7', name: 'motivo_ingreso', type: 'STRING' },
+            { id: 'd8', name: 'evolucion', type: 'STRING' },
+            { id: 'd9', name: 'procedimientos_realizados', type: 'ARRAY_OF_STRINGS' },
+            { id: 'd10', name: 'diagnostico_principal', type: 'STRING' },
+            { id: 'd11', name: 'diagnosticos_secundarios', type: 'ARRAY_OF_STRINGS' },
+            { id: 'd12', name: 'medicacion_alta', type: 'STRING' },
+            { id: 'd13', name: 'recomendaciones', type: 'STRING' },
+            { id: 'd14', name: 'cita_revision', type: 'STRING' },
+        ]
+    },
 ];
 
 export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema, currentPrompt, onSectorChange, currentSector, theme, isHealthMode }: TemplatesPanelProps) {
@@ -92,7 +226,7 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
     const [newTemplateName, setNewTemplateName] = useState('');
     const [newTemplateDescription, setNewTemplateDescription] = useState('');
     const [showArchived, setShowArchived] = useState(false);
-    const [selectedSector, setSelectedSector] = useState<Sector>(currentSector || 'general');
+    const [selectedSector] = useState<Sector>('salud'); // Hardcoded to health sector only
     const [showCertificationsModal, setShowCertificationsModal] = useState(false);
     const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
     const [newSchema, setNewSchema] = useState<SchemaField[]>([{ id: `field-${Date.now()}`, name: '', type: 'STRING' }]);
@@ -188,17 +322,8 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
         }
     };
 
-    const handleSectorChange = (sector: Sector) => {
-        setSelectedSector(sector);
-        if (onSectorChange) {
-            onSectorChange(sector);
-        }
-    };
-
-    // Filtrar plantillas por sector seleccionado
-    const filteredTemplates = selectedSector === 'general'
-        ? defaultTemplates
-        : defaultTemplates.filter(t => t.sector === selectedSector);
+    // All templates are for health sector only
+    const filteredTemplates = defaultTemplates.filter(t => t.sector === 'salud' || !t.sector);
 
     const activeCustomTemplates = customTemplates.filter(t => showArchived || !t.archived);
     const currentSectorInfo = getSectorById(selectedSector);
@@ -619,39 +744,8 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                             borderTopColor: borderColor
                         }}
                     >
-                        <label
-                            htmlFor="sector-select"
-                            className="block text-sm font-medium mb-2 transition-colors duration-500"
-                            style={{ color: textColor }}
-                        >
-                            Filtrar por Sector
-                        </label>
-                        <select
-                            id="sector-select"
-                            value={selectedSector}
-                            onChange={(e) => handleSectorChange(e.target.value as Sector)}
-                            className="w-full rounded-md p-2 text-sm transition-colors duration-500"
-                            style={{
-                                backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
-                                borderColor: borderColor,
-                                color: textColor,
-                                border: `1px solid ${borderColor}`
-                            }}
-                        >
-                            {SECTORS.map(sector => (
-                                <option key={sector.id} value={sector.id}>
-                                    {sector.icon} {sector.name}
-                                </option>
-                            ))}
-                        </select>
-                        {currentSectorInfo?.description && (
-                            <p className="text-xs mt-1 transition-colors duration-500" style={{ color: textSecondary }}>
-                                {currentSectorInfo.description}
-                            </p>
-                        )}
-
                         {/* Mostrar info de certificaciones para sector Salud */}
-                        {selectedSector === 'salud' && currentSectorInfo?.certifications && (
+                        {currentSectorInfo?.certifications && (
                             <button
                                 onClick={() => setShowCertificationsModal(true)}
                                 className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 hover:opacity-90 border-2 rounded-md transition-all text-xs font-semibold"

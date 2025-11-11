@@ -8,15 +8,7 @@ VerbaDoc Salud utiliza la API de Google Gemini para la extracción inteligente d
 
 ## 🤖 Modelos de IA Disponibles
 
-### 1. **Gemini 2.5 Flash-Lite** ⚡ (ECONÓMICO)
-- **Uso recomendado:** Documentos simples, formularios, recetas médicas
-- **Coste por documento:** ~$0.0005 USD (~0.05 céntimos)
-- **Características:**
-  - Procesamiento rápido
-  - Alta precisión en documentos estructurados
-  - Ideal para formularios médicos estándar
-
-### 2. **Gemini 2.5 Flash** 🚀 (RECOMENDADO)
+### 1. **Gemini 2.5 Genérico** 🚀
 - **Uso recomendado:** Documentos médicos estándar, informes clínicos
 - **Coste por documento:** ~$0.0016 USD (~0.16 céntimos)
 - **Características:**
@@ -24,7 +16,7 @@ VerbaDoc Salud utiliza la API de Google Gemini para la extracción inteligente d
   - Excelente para historiales clínicos
   - Reconocimiento avanzado de datos médicos
 
-### 3. **Gemini 2.5 Pro** 🎯 (AVANZADO)
+### 2. **Gemini 2.5 Detallado** 🎯
 - **Uso recomendado:** Documentos complejos, múltiples tablas, análisis profundo
 - **Coste por documento:** ~$0.008 USD (~0.8 céntimos)
 - **Características:**
@@ -36,37 +28,33 @@ VerbaDoc Salud utiliza la API de Google Gemini para la extracción inteligente d
 
 ## 📈 Tabla de Costes por Volumen
 
-| Volumen | Flash-Lite | Flash (Recom.) | Pro |
-|---------|------------|----------------|-----|
-| **100 documentos** | $0.05 | $0.16 | $0.80 |
-| **1,000 documentos** | $0.50 | $1.60 | $8.00 |
-| **10,000 documentos** | $5.00 | $16.00 | $80.00 |
-| **100,000 documentos** | $50.00 | $160.00 | $800.00 |
-| **1,000,000 documentos** | $500.00 | $1,600.00 | $8,000.00 |
+| Volumen | Genérico | Detallado |
+|---------|----------|-----------|
+| **100 documentos** | $0.16 | $0.80 |
+| **1,000 documentos** | $1.60 | $8.00 |
+| **10,000 documentos** | $16.00 | $80.00 |
+| **100,000 documentos** | $160.00 | $800.00 |
+| **1,000,000 documentos** | $1,600.00 | $8,000.00 |
 
 ---
 
 ## 💡 Estimación de Costes Mensual
 
 ### Clínica Pequeña (200 documentos/mes)
-- **Flash-Lite:** ~$0.10/mes
-- **Flash:** ~$0.32/mes
-- **Pro:** ~$1.60/mes
+- **Genérico:** ~$0.32/mes
+- **Detallado:** ~$1.60/mes
 
 ### Clínica Mediana (2,000 documentos/mes)
-- **Flash-Lite:** ~$1.00/mes
-- **Flash:** ~$3.20/mes
-- **Pro:** ~$16.00/mes
+- **Genérico:** ~$3.20/mes
+- **Detallado:** ~$16.00/mes
 
 ### Hospital Grande (20,000 documentos/mes)
-- **Flash-Lite:** ~$10.00/mes
-- **Flash:** ~$32.00/mes
-- **Pro:** ~$160.00/mes
+- **Genérico:** ~$32.00/mes
+- **Detallado:** ~$160.00/mes
 
 ### Hospital Universitario (100,000 documentos/mes)
-- **Flash-Lite:** ~$50.00/mes
-- **Flash:** ~$160.00/mes
-- **Pro:** ~$800.00/mes
+- **Genérico:** ~$160.00/mes
+- **Detallado:** ~$800.00/mes
 
 ---
 
@@ -76,9 +64,8 @@ VerbaDoc Salud utiliza la API de Google Gemini para la extracción inteligente d
 
 | Modelo | Input (por 1M tokens) | Output (por 1M tokens) |
 |--------|----------------------|------------------------|
-| Flash-Lite | $0.10 | $0.40 |
-| Flash | $0.30 | $2.50 |
-| Pro | $1.25 | $10.00 |
+| Genérico | $0.30 | $2.50 |
+| Detallado | $1.25 | $10.00 |
 
 ### Tokens Estimados por Documento Médico
 
@@ -91,7 +78,7 @@ VerbaDoc Salud utiliza la API de Google Gemini para la extracción inteligente d
 **OUTPUT (recibido de API):**
 - Datos extraídos en JSON: ~300-500 tokens
 
-### Cálculo por Documento (Flash - Recomendado)
+### Cálculo por Documento (Genérico)
 ```
 Input:  2,000 tokens × $0.30 / 1,000,000 = $0.0006
 Output:   400 tokens × $2.50 / 1,000,000 = $0.0010
@@ -103,12 +90,7 @@ TOTAL:                                   $0.0016
 
 ## 💸 Comparativa de Ahorro
 
-### Flash-Lite vs Flash
-- **Ahorro:** 3× más barato
-- **Diferencia por 1,000 docs:** $1.10 USD de ahorro
-- **Diferencia por 100,000 docs:** $110 USD de ahorro
-
-### Flash vs Pro
+### Genérico vs Detallado
 - **Ahorro:** 5× más barato
 - **Diferencia por 1,000 docs:** $6.40 USD de ahorro
 - **Diferencia por 100,000 docs:** $640 USD de ahorro
@@ -117,21 +99,16 @@ TOTAL:                                   $0.0016
 
 ## 🎯 Recomendaciones de Uso
 
-### Usar Flash-Lite cuando:
-- ✅ Procesas formularios médicos estándar
-- ✅ Documentos con estructura clara y predefinida
-- ✅ Recetas médicas
-- ✅ Solicitudes de citas
-- ✅ Volumen muy alto de documentos simples
-
-### Usar Flash cuando:
+### Usar Genérico cuando:
 - ✅ Historiales clínicos completos
 - ✅ Informes de laboratorio
+- ✅ Documentos médicos estándar
+- ✅ Formularios médicos
 - ✅ Documentos con formato variable
-- ✅ Balance entre coste y precisión
-- ✅ **Uso general recomendado**
+- ✅ Balance óptimo entre coste y precisión
+- ✅ **Uso general para la mayoría de documentos**
 
-### Usar Pro cuando:
+### Usar Detallado cuando:
 - ✅ Documentos de investigación médica
 - ✅ Historiales con múltiples tablas complejas
 - ✅ Análisis críticos que requieren máxima precisión
@@ -149,7 +126,7 @@ TOTAL:                                   $0.0016
 - Salario promedio administrativo: $15/hora
 - **Coste por documento:** $1.25 - $2.50
 
-**Coste con VerbaDoc (Flash):**
+**Coste con VerbaDoc (Genérico):**
 - Tiempo: < 10 segundos
 - **Coste por documento:** $0.0016
 
@@ -157,7 +134,7 @@ TOTAL:                                   $0.0016
 
 ### Ejemplo Real: Hospital con 10,000 docs/mes
 - **Coste manual:** $12,500 - $25,000/mes
-- **Coste VerbaDoc (Flash):** $16/mes
+- **Coste VerbaDoc (Genérico):** $16/mes
 - **AHORRO MENSUAL:** $12,484 - $24,984
 - **AHORRO ANUAL:** $149,808 - $299,808
 

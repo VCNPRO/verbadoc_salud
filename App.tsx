@@ -12,6 +12,7 @@ import { TemplatesPanel } from './components/TemplatesPanel.tsx';
 import { PdfViewer } from './components/PdfViewer.tsx';
 // Fix: Use explicit file extension in import.
 import { HelpModal } from './components/HelpModal.tsx';
+import { SettingsModal } from './components/SettingsModal.tsx';
 // Fix: Use explicit file extension in import.
 import { ResultsViewer } from './components/ResultsViewer.tsx';
 // Fix: Use explicit file extension in import.
@@ -87,7 +88,8 @@ function App() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [viewingFile, setViewingFile] = useState<File | null>(null);
     const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
-    const [currentSector, setCurrentSector] = useState<Sector>('salud');
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
+    const currentSector: Sector = 'salud'; // Hardcoded to health sector only
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
     const [showResultsExpanded, setShowResultsExpanded] = useState<boolean>(false);
     const [selectedModel, setSelectedModel] = useState<GeminiModel>('gemini-2.5-flash');
@@ -276,13 +278,7 @@ function App() {
             setPrompt(template.prompt);
         }
 
-        if (template.sector) {
-            setCurrentSector(template.sector);
-        }
-    };
-
-    const handleSectorChange = (sector: Sector) => {
-        setCurrentSector(sector);
+        // No sector change needed - always health sector
     };
 
     const handleViewFile = (file: File) => {
@@ -428,21 +424,54 @@ function App() {
                                     ))}
                                 </select>
                             </div>
+                            {/* Help Button */}
                             <button
-                            onClick={() => setIsHelpModalOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 border-2 rounded-lg text-sm transition-all duration-500 font-bold shadow-lg hover:shadow-xl hover:scale-105"
-                            style={{
-                                backgroundColor: isHealthMode ? '#047857' : '#0891b2',
-                                borderColor: isHealthMode ? '#059669' : '#06b6d4',
-                                color: '#ffffff'
-                            }}
-                            title="Ayuda y Guía de Usuario"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="hidden sm:inline">Ayuda</span>
-                        </button>
+                                onClick={() => setIsHelpModalOpen(true)}
+                                className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#f0fdf4' : '#1e293b',
+                                    borderColor: isHealthMode ? '#6ee7b7' : '#475569',
+                                    color: isHealthMode ? '#047857' : '#60a5fa'
+                                }}
+                                title="Ayuda y Guía de Usuario"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </button>
+
+                            {/* Settings Button */}
+                            <button
+                                onClick={() => setIsSettingsModalOpen(true)}
+                                className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#f0fdf4' : '#1e293b',
+                                    borderColor: isHealthMode ? '#6ee7b7' : '#475569',
+                                    color: isHealthMode ? '#047857' : '#60a5fa'
+                                }}
+                                title="Configuración y Cumplimiento Legal"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </button>
+
+                            {/* Logout Button */}
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#fef2f2' : '#1e293b',
+                                    borderColor: isHealthMode ? '#fca5a5' : '#475569',
+                                    color: isHealthMode ? '#dc2626' : '#f87171'
+                                }}
+                                title="Salir"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -502,8 +531,6 @@ function App() {
                                     onSelectTemplate={handleSelectTemplate}
                                     currentSchema={schema}
                                     currentPrompt={prompt}
-                                    onSectorChange={handleSectorChange}
-                                    currentSector={currentSector}
                                     theme={currentTheme}
                                     isHealthMode={isHealthMode}
                                 />
@@ -521,6 +548,12 @@ function App() {
             <HelpModal
                 isOpen={isHelpModalOpen}
                 onClose={() => setIsHelpModalOpen(false)}
+            />
+
+            <SettingsModal
+                isOpen={isSettingsModalOpen}
+                onClose={() => setIsSettingsModalOpen(false)}
+                isHealthMode={isHealthMode}
             />
 
             {/* Modal expandido de resultados */}
@@ -578,6 +611,97 @@ function App() {
                     </div>
                 </div>
             )}
+
+            {/* Footer */}
+            <footer
+                className="border-t-2 py-6 px-8 mt-auto"
+                style={{
+                    backgroundColor: isHealthMode ? '#f9fafb' : '#0f172a',
+                    borderTopColor: isHealthMode ? '#d1d5db' : '#334155',
+                }}
+            >
+                <div className="max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                        {/* Company Info */}
+                        <div>
+                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#047857' : '#06b6d4' }}>
+                                VerbaDoc Salud
+                            </h4>
+                            <p className="text-sm" style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}>
+                                Extracción inteligente de datos médicos con IA procesada en Europa
+                            </p>
+                        </div>
+
+                        {/* Legal Links */}
+                        <div>
+                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#047857' : '#06b6d4' }}>
+                                Legal
+                            </h4>
+                            <div className="space-y-1">
+                                <a
+                                    href="#"
+                                    onClick={(e) => { e.preventDefault(); setIsSettingsModalOpen(true); }}
+                                    className="block text-sm hover:underline"
+                                    style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}
+                                >
+                                    Política de Privacidad
+                                </a>
+                                <a
+                                    href="#"
+                                    onClick={(e) => { e.preventDefault(); setIsSettingsModalOpen(true); }}
+                                    className="block text-sm hover:underline"
+                                    style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}
+                                >
+                                    Términos y Condiciones
+                                </a>
+                                <a
+                                    href="#"
+                                    onClick={(e) => { e.preventDefault(); setIsSettingsModalOpen(true); }}
+                                    className="block text-sm hover:underline"
+                                    style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}
+                                >
+                                    Cumplimiento RGPD
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* Contact */}
+                        <div>
+                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#047857' : '#06b6d4' }}>
+                                Contacto
+                            </h4>
+                            <div className="space-y-1">
+                                <a
+                                    href="mailto:legal@verbadoc.com"
+                                    className="block text-sm hover:underline"
+                                    style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}
+                                >
+                                    legal@verbadoc.com
+                                </a>
+                                <a
+                                    href="mailto:soporte@verbadoc.com"
+                                    className="block text-sm hover:underline"
+                                    style={{ color: isHealthMode ? '#6b7280' : '#94a3b8' }}
+                                >
+                                    soporte@verbadoc.com
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Copyright */}
+                    <div className="border-t pt-4" style={{ borderTopColor: isHealthMode ? '#d1d5db' : '#334155' }}>
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-2">
+                            <p className="text-xs" style={{ color: isHealthMode ? '#6b7280' : '#64748b' }}>
+                                © 2025 VerbaDoc Salud. Todos los derechos reservados. • Procesamiento 100% en Europa 🇪🇺
+                            </p>
+                            <p className="text-xs" style={{ color: isHealthMode ? '#6b7280' : '#64748b' }}>
+                                v1.0 • Powered by Google Gemini AI (Bélgica)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }

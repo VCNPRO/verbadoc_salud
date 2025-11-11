@@ -96,7 +96,7 @@ const convertSchemaToVertexAI = (schema: SchemaField[]): VertexAISchema => {
     };
 };
 
-export type GeminiModel = 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gemini-2.5-pro';
+export type GeminiModel = 'gemini-2.5-flash' | 'gemini-2.5-pro';
 
 export interface ModelInfo {
     id: GeminiModel;
@@ -108,22 +108,15 @@ export interface ModelInfo {
 
 export const AVAILABLE_MODELS: ModelInfo[] = [
     {
-        id: 'gemini-2.5-flash-lite',
-        name: 'Flash-Lite 2.5 (Económico) 🇪🇺',
-        description: 'Modelo económico procesado en Europa (Bélgica)',
-        bestFor: 'Documentos simples, formularios, recetas médicas',
-        costPerDoc: '~$0.0005/doc (3× más barato)'
-    },
-    {
         id: 'gemini-2.5-flash',
-        name: 'Flash 2.5 (Recomendado) 🇪🇺',
+        name: 'Genérico 2.5 🇪🇺',
         description: 'Modelo rápido procesado en Europa (Bélgica)',
         bestFor: 'Documentos médicos estándar, informes clínicos',
         costPerDoc: '~$0.0016/doc'
     },
     {
         id: 'gemini-2.5-pro',
-        name: 'Pro 2.5 (Avanzado) 🇪🇺',
+        name: 'Detallado 2.5 🇪🇺',
         description: 'Modelo avanzado procesado en Europa (Bélgica)',
         bestFor: 'Documentos complejos, múltiples tablas, análisis profundo',
         costPerDoc: '~$0.008/doc'
