@@ -20,67 +20,6 @@ import type { UploadedFile, ExtractionResult, SchemaField, Sector } from './type
 import { AVAILABLE_MODELS, type GeminiModel } from './services/geminiService.ts';
 import { getSectorById, getDefaultTheme } from './utils/sectorsConfig.ts';
 
-// Helper to create a dummy file for the example
-function createExampleFile(): File {
-    const exampleContent = `
-HISTORIA CLÍNICA
-═══════════════════════════════════════════════════════════════
-
-DATOS DE FILIACIÓN
-Nombre Completo: María González López
-DNI/ID: 12345678-A
-Fecha de Nacimiento: 15/03/1985 (39 años)
-Género: Femenino
-Dirección: Av. Principal 123, Ciudad Ejemplo
-Teléfono: +34 600 123 456
-Email: maria.gonzalez@email.com
-
-MOTIVO DE CONSULTA
-Dolor abdominal persistente de 3 días de evolución, acompañado de náuseas.
-
-ANTECEDENTES PERSONALES
-- Alergias: Penicilina
-- Enfermedades crónicas: Diabetes Mellitus tipo 2 (diagnosticada en 2018)
-- Cirugías previas: Apendicectomía (2010)
-- Medicación actual: Metformina 850mg cada 12 horas
-
-EXPLORACIÓN FÍSICA
-Tensión Arterial: 125/80 mmHg
-Frecuencia Cardíaca: 78 lpm
-Temperatura: 37.2°C
-Peso: 68 kg
-Altura: 165 cm
-IMC: 24.9
-
-Estado General: Paciente consciente y orientada
-Abdomen: Dolor a la palpación en epigastrio, sin signos de defensa
-
-DIAGNÓSTICO PROVISIONAL
-Gastritis aguda
-
-TRATAMIENTO PRESCRITO
-- Omeprazol 20mg, 1 comprimido cada 24 horas durante 14 días
-- Dieta blanda
-- Evitar irritantes gástricos (café, alcohol, picantes)
-
-OBSERVACIONES
-Se recomienda control en 7 días. Si los síntomas persisten o empeoran,
-acudir a urgencias.
-
-PRÓXIMA CITA
-Fecha: 15/02/2025
-Hora: 10:30
-
-═══════════════════════════════════════════════════════════════
-Médico: Dr. Carlos Ramírez Soto
-Nº Colegiado: 12345
-Firma: [Firma Digital]
-Fecha de emisión: 08/02/2025
-`;
-    return new File([exampleContent], "historia-clinica-ejemplo.txt", { type: "text/plain" });
-}
-
-
 function App() {
     const [files, setFiles] = useState<UploadedFile[]>([]);
     const [activeFileId, setActiveFileId] = useState<string | null>(null);
@@ -253,16 +192,6 @@ function App() {
         setShowingResults(true); // Mostrar resultados automáticamente
     };
 
-    const handleUseExampleFile = () => {
-        const exampleFile = createExampleFile();
-        const newFile: UploadedFile = {
-            id: `file-${Date.now()}`,
-            file: exampleFile,
-            status: 'pendiente',
-        };
-        setFiles([newFile]);
-        setActiveFileId(newFile.id);
-    };
     
     const handleReplay = (result: ExtractionResult) => {
         // Find if the file still exists in the current batch
@@ -464,7 +393,7 @@ function App() {
         <div
             className="min-h-screen font-sans transition-colors duration-500 flex flex-col"
             style={{
-                backgroundColor: isDarkMode ? '#0f172a' : '#f8fafc',
+                backgroundColor: isDarkMode ? '#0f172a' : '#e0f2f1',
                 color: isDarkMode ? '#e2e8f0' : '#0f172a'
             }}
         >
@@ -472,7 +401,7 @@ function App() {
                 className="backdrop-blur-sm border-b-2 sticky top-0 z-10 transition-colors duration-500 shadow-lg"
                 style={{
                     backgroundColor: isDarkMode ? 'rgba(2, 6, 23, 0.9)' : '#ffffff',
-                    borderBottomColor: isDarkMode ? 'rgba(51, 65, 85, 0.5)' : '#10b981'
+                    borderBottomColor: isDarkMode ? 'rgba(51, 65, 85, 0.5)' : '#00897b'
                 }}
             >
                 <div className="px-4 sm:px-6 lg:px-8">
@@ -482,7 +411,7 @@ function App() {
                                 <h1
                                     className="text-2xl sm:text-3xl font-orbitron font-bold tracking-wide transition-colors duration-500"
                                     style={{
-                                        color: isDarkMode ? '#f1f5f9' : '#059669'
+                                        color: isDarkMode ? '#f1f5f9' : '#00695c'
                                     }}
                                 >
                                     verbadoc
@@ -490,8 +419,8 @@ function App() {
                                 <span
                                     className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
                                     style={{
-                                        backgroundColor: isHealthMode ? '#a7f3d0' : '#334155',
-                                        color: isHealthMode ? '#065f46' : '#f1f5f9'
+                                        backgroundColor: isHealthMode ? '#80cbc4' : '#334155',
+                                        color: isHealthMode ? '#004d40' : '#f1f5f9'
                                     }}
                                 >
                                     🏥 Sector Salud
@@ -507,8 +436,8 @@ function App() {
                                 <span
                                     className="font-sans font-bold text-sm px-2 py-0.5 rounded-md transition-colors cursor-pointer hover:opacity-80"
                                     style={{
-                                        backgroundColor: isHealthMode ? '#a7f3d0' : '#1e293b',
-                                        color: isHealthMode ? '#065f46' : '#06b6d4'
+                                        backgroundColor: isHealthMode ? '#80cbc4' : '#1e293b',
+                                        color: isHealthMode ? '#004d40' : '#06b6d4'
                                     }}
                                     onClick={() => {
                                         const newName = prompt('Ingrese el nombre del cliente:', clientName);
@@ -539,8 +468,8 @@ function App() {
                                     className="text-sm px-3 py-1.5 rounded-md border-2 focus:outline-none focus:ring-2 transition-all"
                                     style={{
                                         backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
-                                        borderColor: isHealthMode ? '#10b981' : '#475569',
-                                        color: isHealthMode ? '#059669' : '#f1f5f9'
+                                        borderColor: isHealthMode ? '#00897b' : '#475569',
+                                        color: isHealthMode ? '#00695c' : '#f1f5f9'
                                     }}
                                 >
                                     {AVAILABLE_MODELS.map(model => (
@@ -557,8 +486,8 @@ function App() {
                                 className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
                                 style={{
                                     backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
-                                    borderColor: isHealthMode ? '#10b981' : '#475569',
-                                    color: isHealthMode ? '#059669' : '#fbbf24'
+                                    borderColor: isHealthMode ? '#00897b' : '#475569',
+                                    color: isHealthMode ? '#00695c' : '#fbbf24'
                                 }}
                                 title={isDarkMode ? "Cambiar a modo día" : "Cambiar a modo noche"}
                             >
@@ -579,8 +508,8 @@ function App() {
                                 className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
                                 style={{
                                     backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
-                                    borderColor: isHealthMode ? '#10b981' : '#475569',
-                                    color: isHealthMode ? '#059669' : '#60a5fa'
+                                    borderColor: isHealthMode ? '#00897b' : '#475569',
+                                    color: isHealthMode ? '#00695c' : '#60a5fa'
                                 }}
                                 title="Ayuda y Guía de Usuario"
                             >
@@ -595,8 +524,8 @@ function App() {
                                 className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
                                 style={{
                                     backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
-                                    borderColor: isHealthMode ? '#10b981' : '#475569',
-                                    color: isHealthMode ? '#059669' : '#60a5fa'
+                                    borderColor: isHealthMode ? '#00897b' : '#475569',
+                                    color: isHealthMode ? '#00695c' : '#60a5fa'
                                 }}
                                 title="Configuración y Cumplimiento Legal"
                             >
@@ -634,7 +563,6 @@ function App() {
                             setFiles={setFiles}
                             activeFileId={activeFileId}
                             onFileSelect={handleFileSelect}
-                            onUseExample={handleUseExampleFile}
                             onExtractAll={handleExtractAll}
                             isLoading={isLoading}
                             onViewFile={handleViewFile}
@@ -665,7 +593,7 @@ function App() {
                                     onClick={() => setShowResultsExpanded(true)}
                                     className="mb-2 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 hover:opacity-90 hover:scale-105 shadow-lg"
                                     style={{
-                                        backgroundColor: isHealthMode ? '#10b981' : '#06b6d4',
+                                        backgroundColor: isHealthMode ? '#00897b' : '#06b6d4',
                                         color: '#ffffff'
                                     }}
                                 >
@@ -722,12 +650,12 @@ function App() {
                         <div
                             className="flex items-center justify-between p-4 border-b-2"
                             style={{
-                                backgroundColor: isHealthMode ? '#f8fafc' : 'rgba(15, 23, 42, 0.5)',
-                                borderBottomColor: isHealthMode ? '#10b981' : '#475569'
+                                backgroundColor: isHealthMode ? '#b2dfdb' : 'rgba(15, 23, 42, 0.5)',
+                                borderBottomColor: isHealthMode ? '#00897b' : '#475569'
                             }}
                         >
-                            <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: isHealthMode ? '#059669' : '#f1f5f9' }}>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: isHealthMode ? '#10b981' : '#06b6d4' }}>
+                            <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: isHealthMode ? '#004d40' : '#f1f5f9' }}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: isHealthMode ? '#00897b' : '#06b6d4' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 Resultados de Extracción
@@ -767,14 +695,14 @@ function App() {
                 className="border-t-2 py-6 px-8 mt-auto"
                 style={{
                     backgroundColor: isHealthMode ? '#ffffff' : '#0f172a',
-                    borderTopColor: isHealthMode ? '#10b981' : '#334155',
+                    borderTopColor: isHealthMode ? '#00897b' : '#334155',
                 }}
             >
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                         {/* Company Info */}
                         <div>
-                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#059669' : '#10b981' }}>
+                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#00695c' : '#10b981' }}>
                                 VerbaDoc Salud
                             </h4>
                             <p className="text-sm" style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}>
@@ -784,7 +712,7 @@ function App() {
 
                         {/* Legal Links */}
                         <div>
-                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#059669' : '#10b981' }}>
+                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#00695c' : '#10b981' }}>
                                 Legal
                             </h4>
                             <div className="space-y-1">
@@ -817,7 +745,7 @@ function App() {
 
                         {/* Contact */}
                         <div>
-                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#059669' : '#10b981' }}>
+                            <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#00695c' : '#10b981' }}>
                                 Contacto
                             </h4>
                             <div className="space-y-1">
