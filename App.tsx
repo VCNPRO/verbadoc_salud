@@ -362,19 +362,22 @@ function App() {
         input.click();
     };
 
+    // Debug: Log theme values
+    console.log('isDarkMode:', isDarkMode, 'isHealthMode:', isHealthMode, 'theme:', currentTheme);
+
     return (
         <div
             className="min-h-screen font-sans transition-colors duration-500"
             style={{
-                backgroundColor: isHealthMode ? currentTheme.background : '#0f172a',
-                color: isHealthMode ? currentTheme.text : '#e2e8f0'
+                backgroundColor: isDarkMode ? '#0f172a' : '#ecfdf5',
+                color: isDarkMode ? '#e2e8f0' : '#064e3b'
             }}
         >
             <header
                 className="backdrop-blur-sm border-b-2 sticky top-0 z-10 transition-colors duration-500 shadow-md"
                 style={{
-                    backgroundColor: isHealthMode ? '#ffffff' : 'rgba(2, 6, 23, 0.7)',
-                    borderBottomColor: isHealthMode ? '#6ee7b7' : 'rgba(51, 65, 85, 0.5)'
+                    backgroundColor: isDarkMode ? 'rgba(2, 6, 23, 0.7)' : '#ffffff',
+                    borderBottomColor: isDarkMode ? 'rgba(51, 65, 85, 0.5)' : '#6ee7b7'
                 }}
             >
                 <div className="px-4 sm:px-6 lg:px-8">
@@ -383,7 +386,7 @@ function App() {
                             <h1
                                 className="text-3xl font-bold font-orbitron tracking-wider transition-colors duration-500"
                                 style={{
-                                    color: isHealthMode ? '#047857' : '#f1f5f9'
+                                    color: isDarkMode ? '#f1f5f9' : '#047857'
                                 }}
                             >
                                 verbadoc
@@ -391,10 +394,10 @@ function App() {
                             <p
                                 className="text-sm font-sans transition-colors duration-500"
                                 style={{
-                                    color: isHealthMode ? '#064e3b' : '#94a3b8'
+                                    color: isDarkMode ? '#94a3b8' : '#064e3b'
                                 }}
                             >
-                                trabajando para {isHealthMode && <span className="font-bold px-2 py-1 bg-green-100 text-green-800 rounded-md">🏥 Sector Salud</span>}
+                                trabajando para {!isDarkMode && <span className="font-bold px-2 py-1 bg-green-100 text-green-800 rounded-md">🏥 Sector Salud</span>}
                             </p>
                         </div>
                         <div className="flex items-center gap-4">
