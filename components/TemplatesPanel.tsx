@@ -565,6 +565,7 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
     const [newTemplateName, setNewTemplateName] = useState('');
     const [newTemplateDescription, setNewTemplateDescription] = useState('');
     const [showArchived, setShowArchived] = useState(false);
+    const [showArchivedCustom, setShowArchivedCustom] = useState(false);
     const selectedSector: Sector = 'salud'; // Hardcoded to health sector only - no state needed
     const [selectedSpecialty, setSelectedSpecialty] = useState<MedicalSpecialty>('general');
 
