@@ -19,7 +19,8 @@ import { ResultsViewer } from './components/ResultsViewer.tsx';
 import type { UploadedFile, ExtractionResult, SchemaField, Sector } from './types.ts';
 import { AVAILABLE_MODELS, type GeminiModel } from './services/geminiService.ts';
 import { getSectorById, getDefaultTheme } from './utils/sectorsConfig.ts';
-import { AuthProvider, useAuth } from './contexts/AuthContext.tsx';
+// MODO MOCK TEMPORAL - Cambiar a './contexts/AuthContext.tsx' cuando Firebase esté configurado
+import { AuthProvider, useAuth } from './contexts/AuthContext.mock.tsx';
 import { AuthModal } from './components/AuthModal.tsx';
 
 function AppContent() {

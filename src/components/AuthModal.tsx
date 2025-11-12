@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useAuth, MedicalSpecialty } from '../contexts/AuthContext';
+// MODO MOCK TEMPORAL - Cambiar a '../contexts/AuthContext' cuando Firebase esté configurado
+import { useAuth, MedicalSpecialty } from '../contexts/AuthContext.mock';
 
 interface AuthModalProps {
     isHealthMode: boolean;
