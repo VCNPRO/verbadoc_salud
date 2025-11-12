@@ -72,7 +72,7 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
 
     // Generate PDF preview when extracted data changes
     useEffect(() => {
-        if (file?.extractedData && !file.error) {
+        if (file?.extractedData && !file.error && file.file) {
             const url = generatePDFPreviewURL(file.extractedData, file.file.name.replace(/\.[^/.]+$/, ""));
             setPdfPreviewURL(url);
 
@@ -83,7 +83,7 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
                 }
             };
         }
-    }, [file?.extractedData, file?.error]);
+    }, [file?.extractedData, file?.error, file?.file]);
 
     const handleImageSearch = async (referenceImage: File, modelId: GeminiModel) => {
         if (!file) return;
@@ -171,9 +171,9 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
             <div className="p-4 md:p-6 border-b transition-colors duration-500" style={{ borderBottomColor: borderColor }}>
                 <h2 className="text-lg font-semibold mb-1" style={{ color: textColor }}>
                     {showTemplatePreview ? (
-                        <>Vista Previa de Plantilla: <span className="font-normal" style={{ color: accentColor }}>{template.name}</span></>
+                        <>Vista Previa de Plantilla: <span className="font-normal" style={{ color: accentColor }}>{template?.name || 'Sin nombre'}</span></>
                     ) : (
-                        <>Editor de Extracción: <span className="font-normal" style={{ color: accentColor }}>{file?.file.name}</span></>
+                        <>Editor de Extracción: <span className="font-normal" style={{ color: accentColor }}>{file?.file?.name || 'Sin nombre'}</span></>
                     )}
                 </h2>
                 <p className="text-sm" style={{ color: textSecondary }}>
@@ -295,12 +295,13 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
                     )}
                 </div>
 
-                {/* Búsqueda de imágenes - sección colapsable */}
-                <div className="border-t pt-4 transition-colors duration-500" style={{ borderTopColor: borderColor }}>
-                    <button
-                        onClick={() => setShowImageSearch(!showImageSearch)}
-                        className="flex items-center justify-between w-full text-left"
-                    >
+                {/* Búsqueda de imágenes - sección colapsable (solo con archivo) */}
+                {!showTemplatePreview && (
+                    <div className="border-t pt-4 transition-colors duration-500" style={{ borderTopColor: borderColor }}>
+                        <button
+                            onClick={() => setShowImageSearch(!showImageSearch)}
+                            className="flex items-center justify-between w-full text-left"
+                        >
                         <h3 className="text-base font-medium flex items-center gap-2" style={{ color: textColor }}>
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" style={{ color: accentColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -366,7 +367,8 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
                             )}
                         </>
                     )}
-                </div>
+                    </div>
+                )}
             </div>
 
             <div className="p-4 md:p-6 border-t transition-colors duration-500" style={{ borderTopColor: borderColor, backgroundColor: isHealthMode ? '#f9fafb' : 'rgba(30, 41, 59, 0.8)' }}>
@@ -479,7 +481,7 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
                     </div>
                 </div>
             )}
-             {file.error && (
+             {file && file.error && (
                 <div className="border-t p-4 md:p-6 transition-colors duration-500" style={{ borderTopColor: borderColor }}>
                     <h3 className="text-base font-medium text-red-400 mb-2">Error de Extracción</h3>
                     <p className="text-sm bg-red-900/30 p-3 rounded-md text-red-300">{file.error}</p>
