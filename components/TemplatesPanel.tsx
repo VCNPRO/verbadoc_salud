@@ -675,6 +675,7 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
     );
 
     const activeCustomTemplates = customTemplates.filter(t => showArchived || !t.archived);
+    const archivedCustomTemplates = customTemplates.filter(t => t.archived);
     const currentSectorInfo = getSectorById(selectedSector);
     const currentSpecialtyInfo = getSpecialtyById(selectedSpecialty);
 
