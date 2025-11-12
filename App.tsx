@@ -21,7 +21,7 @@ import { AVAILABLE_MODELS, type GeminiModel } from './services/geminiService.ts'
 import { getSectorById, getDefaultTheme } from './utils/sectorsConfig.ts';
 // MODO MOCK TEMPORAL - Cambiar a './src/contexts/AuthContext.tsx' cuando Firebase esté configurado
 import { AuthProvider, useAuth } from './src/contexts/AuthContext.mock.tsx';
-import { AuthModal } from './components/AuthModal.tsx';
+import { AuthModal } from './src/components/AuthModal.tsx';
 
 function AppContent() {
     const { currentUser, userProfile, logout } = useAuth();
