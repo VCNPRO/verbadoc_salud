@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { XIcon, InformationCircleIcon } from './Icons';
 import { DocumentViewer } from './DocumentViewer';
+import { downloadUserGuidePDF, downloadQuickGuidePDF } from '../utils/exportUtils';
 
 interface HelpModalProps {
     isOpen: boolean;
@@ -529,30 +530,54 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                                 <div className="bg-slate-800/50 p-3 rounded border border-slate-700/30">
                                     <h4 className="text-sm font-semibold text-cyan-400 mb-2">📄 Guía Rápida</h4>
                                     <p className="text-xs text-slate-400 mb-3">Referencia condensada de características principales</p>
-                                    <button
-                                        onClick={() => openDocument('quick')}
-                                        className="w-full text-center px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm rounded transition-colors font-medium"
-                                    >
-                                        📖 Leer Guía Rápida
-                                    </button>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => openDocument('quick')}
+                                            className="w-full text-center px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm rounded transition-colors font-medium"
+                                        >
+                                            📖 Leer Guía Rápida
+                                        </button>
+                                        <button
+                                            onClick={() => downloadQuickGuidePDF()}
+                                            className="w-full text-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors font-medium flex items-center justify-center gap-1"
+                                            title="Descargar PDF directamente (método optimizado)"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            Descargar PDF
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Guía Detallada */}
                                 <div className="bg-slate-800/50 p-3 rounded border border-slate-700/30">
                                     <h4 className="text-sm font-semibold text-emerald-400 mb-2">📖 Guía Completa</h4>
                                     <p className="text-xs text-slate-400 mb-3">Manual detallado (80 páginas) con casos de uso y FAQ</p>
-                                    <button
-                                        onClick={() => openDocument('complete')}
-                                        className="w-full text-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded transition-colors font-medium"
-                                    >
-                                        📚 Leer Guía Completa
-                                    </button>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => openDocument('complete')}
+                                            className="w-full text-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded transition-colors font-medium"
+                                        >
+                                            📚 Leer Guía Completa
+                                        </button>
+                                        <button
+                                            onClick={() => downloadUserGuidePDF()}
+                                            className="w-full text-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors font-medium flex items-center justify-center gap-1"
+                                            title="Descargar PDF directamente (método optimizado para documentos largos)"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            Descargar PDF
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="mt-3 bg-blue-900/20 p-2 rounded border border-blue-700/30">
                                 <p className="text-xs text-blue-200">
-                                    💡 <strong>Tip:</strong> Cada guía incluye un botón "Descargar PDF" para guardar el documento directamente en formato PDF
+                                    💡 <strong>Tip:</strong> Usa "Descargar PDF" para obtener el documento optimizado sin necesidad de abrirlo primero (recomendado para documentos largos)
                                 </p>
                             </div>
                         </div>

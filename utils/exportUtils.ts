@@ -409,3 +409,247 @@ export const downloadJSON = (data: object | object[], filename: string) => {
     link.click();
     document.body.removeChild(link);
 };
+
+/**
+ * Convierte contenido markdown a PDF (versión optimizada sin html2canvas)
+ */
+export const markdownToPDF = (markdownContent: string, title: string): Blob => {
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 20;
+    const maxWidth = pageWidth - (margin * 2);
+    let yPosition = margin;
+
+    // Función para agregar nueva página si es necesario
+    const checkPageBreak = (requiredSpace: number = 10) => {
+        if (yPosition + requiredSpace > pageHeight - margin) {
+            pdf.addPage();
+            yPosition = margin;
+            return true;
+        }
+        return false;
+    };
+
+    // Función para agregar texto con wrap
+    const addText = (text: string, fontSize: number, color: [number, number, number], isBold: boolean = false) => {
+        pdf.setFontSize(fontSize);
+        pdf.setTextColor(color[0], color[1], color[2]);
+        pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
+
+        const lines = pdf.splitTextToSize(text, maxWidth);
+        for (const line of lines) {
+            checkPageBreak();
+            pdf.text(line, margin, yPosition);
+            yPosition += fontSize * 0.5;
+        }
+    };
+
+    // Título principal
+    pdf.setFontSize(20);
+    pdf.setTextColor(0, 102, 204);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(title, margin, yPosition);
+    yPosition += 15;
+
+    // Fecha
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 100, 100);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Generado: ${new Date().toLocaleDateString('es-ES')}`, margin, yPosition);
+    yPosition += 10;
+
+    // Línea separadora
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+    yPosition += 10;
+
+    // Procesar líneas de markdown
+    const lines = markdownContent.split('\n');
+    let inCodeBlock = false;
+    let codeBlockContent: string[] = [];
+    let inList = false;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        // Detectar bloques de código
+        if (line.trim().startsWith('```')) {
+            if (inCodeBlock) {
+                // Fin del bloque de código
+                checkPageBreak(codeBlockContent.length * 4 + 5);
+                pdf.setFillColor(245, 245, 245);
+                pdf.rect(margin, yPosition - 2, maxWidth, codeBlockContent.length * 4 + 4, 'F');
+                pdf.setFontSize(8);
+                pdf.setTextColor(50, 50, 50);
+                pdf.setFont('courier', 'normal');
+                for (const codeLine of codeBlockContent) {
+                    pdf.text(codeLine.substring(0, 100), margin + 2, yPosition);
+                    yPosition += 4;
+                }
+                yPosition += 5;
+                codeBlockContent = [];
+                inCodeBlock = false;
+            } else {
+                // Inicio del bloque de código
+                inCodeBlock = true;
+            }
+            continue;
+        }
+
+        if (inCodeBlock) {
+            codeBlockContent.push(line);
+            continue;
+        }
+
+        // Encabezados H1 (# )
+        if (line.startsWith('# ') && !line.startsWith('## ')) {
+            inList = false;
+            checkPageBreak(15);
+            yPosition += 5;
+            addText(line.substring(2).replace(/[^\x00-\x7F]/g, ''), 16, [0, 102, 204], true);
+            yPosition += 3;
+            continue;
+        }
+
+        // Encabezados H2 (## )
+        if (line.startsWith('## ') && !line.startsWith('### ')) {
+            inList = false;
+            checkPageBreak(12);
+            yPosition += 4;
+            addText(line.substring(3).replace(/[^\x00-\x7F]/g, ''), 14, [50, 50, 50], true);
+            yPosition += 2;
+            continue;
+        }
+
+        // Encabezados H3 (### )
+        if (line.startsWith('### ')) {
+            inList = false;
+            checkPageBreak(10);
+            yPosition += 3;
+            addText(line.substring(4).replace(/[^\x00-\x7F]/g, ''), 12, [70, 70, 70], true);
+            yPosition += 2;
+            continue;
+        }
+
+        // Líneas horizontales (---)
+        if (line.trim() === '---') {
+            inList = false;
+            checkPageBreak(5);
+            yPosition += 3;
+            pdf.setDrawColor(200, 200, 200);
+            pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+            yPosition += 5;
+            continue;
+        }
+
+        // Listas (-, *, números)
+        if (line.match(/^\s*[-*]\s/) || line.match(/^\s*\d+\.\s/)) {
+            if (!inList) {
+                inList = true;
+                yPosition += 2;
+            }
+            checkPageBreak();
+            const indent = (line.match(/^\s*/)?.[0].length || 0) * 2;
+            const content = line.replace(/^\s*[-*\d.]\s*/, '').replace(/[^\x00-\x7F]/g, '');
+            pdf.setFontSize(10);
+            pdf.setTextColor(50, 50, 50);
+            pdf.setFont('helvetica', 'normal');
+
+            // Bullet point
+            pdf.text('•', margin + indent, yPosition);
+
+            // Texto de la lista
+            const listLines = pdf.splitTextToSize(content, maxWidth - indent - 5);
+            for (let j = 0; j < listLines.length; j++) {
+                checkPageBreak();
+                pdf.text(listLines[j], margin + indent + 5, yPosition);
+                yPosition += 5;
+            }
+            continue;
+        }
+
+        // Líneas vacías
+        if (line.trim() === '') {
+            if (inList) {
+                inList = false;
+            }
+            yPosition += 3;
+            continue;
+        }
+
+        // Texto normal
+        inList = false;
+        checkPageBreak();
+
+        // Remover emojis y caracteres especiales para el PDF
+        let processedLine = line.replace(/[^\x00-\x7F]/g, '');
+
+        addText(processedLine, 10, [50, 50, 50]);
+        yPosition += 2;
+    }
+
+    return pdf.output('blob');
+};
+
+/**
+ * Descarga la guía rápida como PDF
+ */
+export const downloadQuickGuidePDF = async (filename: string = 'Guia_Rapida_VerbaDoc') => {
+    try {
+        const response = await fetch('/docs/GUIA_RAPIDA.md');
+        if (!response.ok) {
+            throw new Error('No se pudo cargar la guía rápida');
+        }
+
+        const markdownContent = await response.text();
+        const blob = markdownToPDF(markdownContent, 'Guía Rápida - Verbadoc Salud');
+
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${filename}.pdf`);
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+    } catch (error) {
+        console.error('Error al generar PDF de la guía rápida:', error);
+        alert('Error al generar el PDF de la guía rápida');
+    }
+};
+
+/**
+ * Descarga la guía de usuario completa como PDF
+ */
+export const downloadUserGuidePDF = async (filename: string = 'Guia_Usuario_Completa_VerbaDoc') => {
+    try {
+        const response = await fetch('/docs/GUIA_USUARIO_VERBADOC_SALUD.md');
+        if (!response.ok) {
+            throw new Error('No se pudo cargar la guía de usuario');
+        }
+
+        const markdownContent = await response.text();
+        const blob = markdownToPDF(markdownContent, 'Guía de Usuario Completa - Verbadoc Salud');
+
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${filename}.pdf`);
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+    } catch (error) {
+        console.error('Error al generar PDF de la guía:', error);
+        alert('Error al generar el PDF de la guía de usuario');
+    }
+};
