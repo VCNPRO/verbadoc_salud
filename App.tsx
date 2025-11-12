@@ -474,6 +474,25 @@ function App() {
                                 )}
                             </button>
 
+                            {/* AI Model Selector */}
+                            <select
+                                value={selectedModel}
+                                onChange={(e) => setSelectedModel(e.target.value as GeminiModel)}
+                                className="px-3 py-2 border-2 rounded-lg font-medium transition-all duration-500 hover:shadow-lg focus:outline-none focus:ring-2 text-sm"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                    borderColor: isHealthMode ? '#00897b' : '#475569',
+                                    color: isHealthMode ? '#00695c' : '#60a5fa'
+                                }}
+                                title="Seleccionar modelo de IA"
+                            >
+                                {AVAILABLE_MODELS.map(model => (
+                                    <option key={model.id} value={model.id}>
+                                        {model.name}
+                                    </option>
+                                ))}
+                            </select>
+
                             {/* Help Button */}
                             <button
                                 onClick={() => setIsHelpModalOpen(true)}

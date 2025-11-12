@@ -137,7 +137,10 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
         }
     };
 
-    if (!file) {
+    // Si no hay archivo, pero hay plantilla seleccionada, mostrar la plantilla
+    const showTemplatePreview = !file && template;
+
+    if (!file && !template) {
         return (
             <div
                 className="flex flex-col items-center justify-center h-full rounded-lg border p-6 text-center transition-colors duration-500"
@@ -147,9 +150,9 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
                 }}
             >
                 <CubeIcon className="w-16 h-16 mb-4" style={{ color: textSecondary }} />
-                <h3 className="text-xl font-semibold" style={{ color: textColor }}>Seleccione un archivo</h3>
+                <h3 className="text-xl font-semibold" style={{ color: textColor }}>Seleccione una plantilla o archivo</h3>
                 <p className="max-w-sm mx-auto mt-1" style={{ color: textSecondary }}>
-                    Elija un documento del lote de la izquierda para comenzar a definir su esquema de extracción y ver los resultados.
+                    Elija una plantilla del panel derecho para ver su estructura, o suba un documento del panel izquierdo para comenzar la extracción.
                 </p>
             </div>
         );
@@ -167,9 +170,17 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
         >
             <div className="p-4 md:p-6 border-b transition-colors duration-500" style={{ borderBottomColor: borderColor }}>
                 <h2 className="text-lg font-semibold mb-1" style={{ color: textColor }}>
-                    Editor de Extracción: <span className="font-normal" style={{ color: accentColor }}>{file.file.name}</span>
+                    {showTemplatePreview ? (
+                        <>Vista Previa de Plantilla: <span className="font-normal" style={{ color: accentColor }}>{template.name}</span></>
+                    ) : (
+                        <>Editor de Extracción: <span className="font-normal" style={{ color: accentColor }}>{file?.file.name}</span></>
+                    )}
                 </h2>
-                <p className="text-sm" style={{ color: textSecondary }}>Defina la estructura de datos que desea extraer del documento.</p>
+                <p className="text-sm" style={{ color: textSecondary }}>
+                    {showTemplatePreview
+                        ? 'Revise la estructura de esta plantilla. Suba un documento para usarla en la extracción.'
+                        : 'Defina la estructura de datos que desea extraer del documento.'}
+                </p>
             </div>
 
             <div className="flex-grow p-4 md:p-6 overflow-y-auto space-y-6">
@@ -359,24 +370,45 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
             </div>
 
             <div className="p-4 md:p-6 border-t transition-colors duration-500" style={{ borderTopColor: borderColor, backgroundColor: isHealthMode ? '#f9fafb' : 'rgba(30, 41, 59, 0.8)' }}>
-                <button
-                    onClick={() => onExtract(selectedModel)}
-                    disabled={isLoading || !file || hasSchemaErrors || schema.length === 0}
-                    className="w-full flex items-center justify-center gap-2 text-white font-bold py-3 px-4 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-                    style={{
-                        backgroundColor: accentColor
-                    }}
-                >
-                    {isLoading ? (
-                        <>
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Extrayendo Datos con {AVAILABLE_MODELS.find(m => m.id === selectedModel)?.name}...
-                        </>
-                    ) : (
-                        `Ejecutar Extracción con ${AVAILABLE_MODELS.find(m => m.id === selectedModel)?.name}`
-                    )}
-                </button>
-                {hasSchemaErrors && (
+                {showTemplatePreview ? (
+                    <div
+                        className="w-full flex flex-col items-center justify-center gap-2 py-3 px-4 rounded-md border-2 border-dashed"
+                        style={{
+                            borderColor: accentColor,
+                            backgroundColor: isHealthMode ? 'rgba(6, 182, 212, 0.05)' : 'rgba(6, 182, 212, 0.1)',
+                            color: textColor
+                        }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" style={{ color: accentColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span className="text-sm font-medium" style={{ color: textColor }}>
+                            Suba un documento para usar esta plantilla
+                        </span>
+                        <span className="text-xs" style={{ color: textSecondary }}>
+                            Arrastre archivos al panel izquierdo o haga clic para seleccionar
+                        </span>
+                    </div>
+                ) : (
+                    <button
+                        onClick={() => onExtract(selectedModel)}
+                        disabled={isLoading || !file || hasSchemaErrors || schema.length === 0}
+                        className="w-full flex items-center justify-center gap-2 text-white font-bold py-3 px-4 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                        style={{
+                            backgroundColor: accentColor
+                        }}
+                    >
+                        {isLoading ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Extrayendo Datos con {AVAILABLE_MODELS.find(m => m.id === selectedModel)?.name}...
+                            </>
+                        ) : (
+                            `Ejecutar Extracción con ${AVAILABLE_MODELS.find(m => m.id === selectedModel)?.name}`
+                        )}
+                    </button>
+                )}
+                {!showTemplatePreview && hasSchemaErrors && (
                     <p className="text-xs text-red-400 mt-2 text-center flex items-center justify-center gap-1">
                         <ExclamationTriangleIcon className="w-4 h-4" />
                         Corrija los errores en los nombres de los campos del esquema para continuar.
@@ -384,7 +416,7 @@ export const ExtractionEditor: React.FC<ExtractionEditorProps> = ({ file, templa
                 )}
             </div>
 
-            {file.extractedData && !file.error && (
+            {file && file.extractedData && !file.error && (
                  <div className="border-t transition-colors duration-500" style={{ borderTopColor: borderColor }}>
                     <div className="flex justify-between items-center p-4 md:p-6 pb-2">
                         <h3 className="text-base font-medium" style={{ color: textColor }}>Resultados Extraídos (Vista PDF)</h3>

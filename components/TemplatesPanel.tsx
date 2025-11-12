@@ -778,8 +778,8 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                     borderBottomColor: borderColor
                 }}
             >
-                <h2 className="text-lg font-semibold transition-colors duration-500" style={{ color: textColor }}>Configuración</h2>
-                <p className="text-xs mt-1 transition-colors duration-500" style={{ color: textSecondary }}>Modelos y plantillas</p>
+                <h2 className="text-lg font-semibold transition-colors duration-500" style={{ color: textColor }}>Plantillas</h2>
+                <p className="text-xs mt-1 transition-colors duration-500" style={{ color: textSecondary }}>Gestión de plantillas de extracción</p>
             </div>
 
             <div
@@ -790,26 +790,24 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
             >
                 {!isCreatingTemplate ? (
                     <>
-                        {/* SECCIÓN 1: MODELOS IA */}
+                        {/* SECCIÓN 1: MIS MODELOS */}
                         <div className="border-2 rounded-lg overflow-hidden" style={{ borderColor: borderColor }}>
                             <button
-                                onClick={() => setShowModelsSection(!showModelsSection)}
+                                onClick={() => setShowMyModelsSection(!showMyModelsSection)}
                                 className="w-full flex items-center justify-between p-3 transition-colors hover:opacity-80"
                                 style={{
                                     backgroundColor: isHealthMode ? '#ffffff' : 'rgba(30, 41, 59, 0.5)',
-                                    borderBottomWidth: showModelsSection ? '2px' : '0',
+                                    borderBottomWidth: showMyModelsSection ? '2px' : '0',
                                     borderBottomColor: borderColor
                                 }}
                             >
                                 <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: textColor }}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                    </svg>
-                                    Modelos IA
+                                    <FileIcon className="w-5 h-5" style={{ color: isHealthMode ? '#a855f7' : '#c084fc' }} />
+                                    Mis Modelos ({activeCustomTemplates.length})
                                 </h3>
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
-                                    className={`h-5 w-5 transition-transform ${showModelsSection ? 'rotate-180' : ''}`}
+                                    className={`h-5 w-5 transition-transform ${showMyModelsSection ? 'rotate-180' : ''}`}
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
@@ -818,34 +816,74 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            {showModelsSection && (
-                                <div className="p-3">
-                                    <label className="block text-xs font-medium mb-1.5" style={{ color: textColor }}>
-                                        Seleccionar modelo:
-                                    </label>
-                                    <select
-                                        value={selectedModel || 'gemini-2.5-flash'}
-                                        onChange={(e) => onModelChange && onModelChange(e.target.value)}
-                                        className="w-full rounded-md p-2 text-sm"
+                            {showMyModelsSection && (
+                                <div className="p-3 space-y-3">
+                                    {/* Botón crear plantilla */}
+                                    <button
+                                        onClick={() => setIsCreatingTemplate(true)}
+                                        className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg border-2 border-dashed transition-all hover:shadow-md"
                                         style={{
-                                            backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
-                                            borderWidth: '1px',
-                                            borderStyle: 'solid',
-                                            borderColor: borderColor,
-                                            color: textColor
+                                            backgroundColor: isHealthMode ? '#dcfce7' : 'rgba(34, 197, 94, 0.1)',
+                                            borderColor: isHealthMode ? '#10b981' : '#22c55e',
+                                            color: isHealthMode ? '#047857' : '#4ade80'
                                         }}
                                     >
-                                        {AVAILABLE_MODELS.map(model => (
-                                            <option key={model.id} value={model.id}>
-                                                {model.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        <span className="text-xs font-medium">Crear Nueva Plantilla</span>
+                                    </button>
+
+                                    {/* Plantillas personalizadas */}
+                                    {activeCustomTemplates.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {activeCustomTemplates.map(template => (
+                                                <TemplateCard key={template.id} template={template} showActions={true} />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-4 text-xs" style={{ color: textSecondary }}>
+                                            <p>No tienes plantillas personalizadas</p>
+                                            <p className="mt-1">Crea una para empezar</p>
+                                        </div>
+                                    )}
+
+                                    {/* Plantillas archivadas */}
+                                    {archivedCustomTemplates.length > 0 && (
+                                        <div className="mt-3 pt-3 border-t" style={{ borderTopColor: borderColor }}>
+                                            <button
+                                                onClick={() => setShowArchivedCustom(!showArchivedCustom)}
+                                                className="w-full flex items-center justify-between p-2 rounded transition-colors hover:opacity-80"
+                                                style={{
+                                                    backgroundColor: isHealthMode ? '#80cbc4' : 'rgba(16, 185, 129, 0.1)',
+                                                    color: textColor
+                                                }}
+                                            >
+                                                <span className="text-xs font-medium">📦 Archivadas ({archivedCustomTemplates.length})</span>
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className={`h-4 w-4 transition-transform ${showArchivedCustom ? 'rotate-180' : ''}`}
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                            {showArchivedCustom && (
+                                                <div className="mt-2 space-y-2">
+                                                    {archivedCustomTemplates.map(template => (
+                                                        <TemplateCard key={template.id} template={template} showActions={true} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
 
-                        {/* SECCIÓN 2: PLANTILLAS */}
+                        {/* SECCIÓN 2: PLANTILLAS PREDEFINIDAS */}
                         <div className="border-2 rounded-lg overflow-hidden" style={{ borderColor: borderColor }}>
                             <button
                                 onClick={() => setShowTemplatesSection(!showTemplatesSection)}
@@ -945,150 +983,6 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
                                 </div>
                             )}
                         </div>
-
-                        {/* SECCIÓN 3: MIS MODELOS */}
-                        <div className="border-2 rounded-lg overflow-hidden" style={{ borderColor: borderColor }}>
-                            <button
-                                onClick={() => setShowMyModelsSection(!showMyModelsSection)}
-                                className="w-full flex items-center justify-between p-3 transition-colors hover:opacity-80"
-                                style={{
-                                    backgroundColor: isHealthMode ? '#ffffff' : 'rgba(30, 41, 59, 0.5)',
-                                    borderBottomWidth: showMyModelsSection ? '2px' : '0',
-                                    borderBottomColor: borderColor
-                                }}
-                            >
-                                <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: textColor }}>
-                                    <FileIcon className="w-5 h-5" style={{ color: isHealthMode ? '#a855f7' : '#c084fc' }} />
-                                    Mis Modelos ({activeCustomTemplates.length})
-                                </h3>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className={`h-5 w-5 transition-transform ${showMyModelsSection ? 'rotate-180' : ''}`}
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    style={{ color: textColor }}
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            {showMyModelsSection && (
-                                <div className="p-3">
-                                    {activeCustomTemplates.length > 0 ? (
-                                        <div className="space-y-2">
-                                            {activeCustomTemplates.map(template => (
-                                                <TemplateCard key={template.id} template={template} showActions={true} />
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-4 text-xs" style={{ color: textSecondary }}>
-                                            <p>No hay modelos guardados</p>
-                                            <p className="mt-1 opacity-75">Crea y guarda tus propios modelos</p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* BOTONES CREAR Y GUARDAR */}
-                        <div className="space-y-2 pt-2">
-                        <button
-                            onClick={() => setIsCreatingTemplate(true)}
-                            className="w-full p-2.5 border-2 border-dashed rounded-lg transition-all flex items-center justify-center gap-2 font-medium text-sm hover:opacity-90 hover:shadow-md"
-                            style={{
-                                backgroundColor: isHealthMode ? '#b2dfdb' : 'rgba(6, 182, 212, 0.2)',
-                                borderColor: isHealthMode ? '#00897b' : 'rgba(34, 211, 238, 0.5)',
-                                color: isHealthMode ? '#004d40' : '#22d3ee'
-                            }}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span>Crear Plantilla</span>
-                        </button>
-
-                        {/* Botón para guardar plantilla actual del editor */}
-                        {currentSchema && currentPrompt && (
-                            <button
-                                onClick={() => setShowSaveDialog(true)}
-                                className="w-full p-2 border rounded transition-all flex items-center justify-center gap-2 font-medium text-sm hover:opacity-90"
-                                style={{
-                                    backgroundColor: isHealthMode ? '#f3e8ff' : 'rgba(147, 51, 234, 0.2)',
-                                    borderColor: isHealthMode ? '#c084fc' : 'rgba(168, 85, 247, 0.5)',
-                                    color: isHealthMode ? '#7c3aed' : '#e9d5ff'
-                                }}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                </svg>
-                                <span>Guardar Plantilla</span>
-                            </button>
-                        )}
-
-                        {/* Dialog para guardar plantilla actual */}
-                        {showSaveDialog && (
-                            <div className="p-3 rounded-lg border space-y-2" style={{
-                                backgroundColor: isHealthMode ? '#f9fafb' : 'rgba(51, 65, 85, 0.5)',
-                                borderColor: isHealthMode ? '#d1d5db' : '#475569'
-                            }}>
-                                <input
-                                    type="text"
-                                    placeholder="Nombre de la plantilla"
-                                    value={newTemplateName}
-                                    onChange={(e) => setNewTemplateName(e.target.value)}
-                                    className="w-full rounded px-2 py-1.5 text-sm"
-                                    style={{
-                                        backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
-                                        borderWidth: '1px',
-                                        borderStyle: 'solid',
-                                        borderColor: isHealthMode ? '#d1d5db' : '#475569',
-                                        color: textColor
-                                    }}
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Descripción (opcional)"
-                                    value={newTemplateDescription}
-                                    onChange={(e) => setNewTemplateDescription(e.target.value)}
-                                    className="w-full rounded px-2 py-1.5 text-sm"
-                                    style={{
-                                        backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
-                                        borderWidth: '1px',
-                                        borderStyle: 'solid',
-                                        borderColor: isHealthMode ? '#d1d5db' : '#475569',
-                                        color: textColor
-                                    }}
-                                />
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={handleSaveTemplate}
-                                        disabled={!newTemplateName.trim()}
-                                        className="flex-1 px-2 py-1.5 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:opacity-90"
-                                        style={{
-                                            backgroundColor: isHealthMode ? '#7c3aed' : '#a855f7',
-                                            color: '#ffffff'
-                                        }}
-                                    >
-                                        Guardar
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setShowSaveDialog(false);
-                                            setNewTemplateName('');
-                                            setNewTemplateDescription('');
-                                        }}
-                                        className="flex-1 px-2 py-1.5 rounded text-sm font-medium transition-colors hover:opacity-80"
-                                        style={{
-                                            backgroundColor: isHealthMode ? '#e5e7eb' : '#475569',
-                                            color: isHealthMode ? '#374151' : '#f1f5f9'
-                                        }}
-                                    >
-                                        Cancelar
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
                     </>
                 ) : (
                     <div className="space-y-3">
