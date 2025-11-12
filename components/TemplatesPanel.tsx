@@ -5,8 +5,8 @@ import { SECTORS, getSectorById } from '../utils/sectorsConfig.ts';
 import { MEDICAL_SPECIALTIES, getSpecialtyById } from '../utils/specialtiesConfig.ts';
 import { SchemaBuilder } from './SchemaBuilder.tsx';
 import { generateSchemaFromPrompt, AVAILABLE_MODELS } from '../services/geminiService.ts';
-// MODO MOCK TEMPORAL - Cambiar a '../contexts/AuthContext.tsx' cuando Firebase esté configurado
-import { useAuth } from '../contexts/AuthContext.mock.tsx';
+// MODO MOCK TEMPORAL - Cambiar a '../src/contexts/AuthContext.tsx' cuando Firebase esté configurado
+import { useAuth } from '../src/contexts/AuthContext.mock.tsx';
 
 export interface Template {
     id: string;
