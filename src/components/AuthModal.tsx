@@ -82,7 +82,7 @@ export function AuthModal({ isHealthMode }: AuthModalProps) {
                         className="text-3xl font-bold mb-2"
                         style={{ color: accentColor }}
                     >
-                        VerbaDoc Salud
+                        verbadoc salud
                     </h1>
                     <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>
                         Sistema de Gestión Documental Médica

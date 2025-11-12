@@ -38,7 +38,8 @@ function AppContent() {
     const [showResultsExpanded, setShowResultsExpanded] = useState<boolean>(false);
     const [selectedModel, setSelectedModel] = useState<GeminiModel>('gemini-2.5-flash');
     const [clientName, setClientName] = useState<string>(() => {
-        return localStorage.getItem('verbadoc-client-name') || '[Nombre de Cliente]';
+        // Usar el nombre del usuario autenticado como nombre del cliente
+        return localStorage.getItem('verbadoc-client-name') || userProfile?.displayName || '[Nombre de Cliente]';
     });
 
     // State for the editor, which can be reused across different files
@@ -82,6 +83,13 @@ function AppContent() {
     useEffect(() => {
         localStorage.setItem('verbadoc-client-name', clientName);
     }, [clientName]);
+
+    // Actualizar nombre del cliente cuando el usuario inicie sesión
+    useEffect(() => {
+        if (userProfile?.displayName && !localStorage.getItem('verbadoc-client-name')) {
+            setClientName(userProfile.displayName);
+        }
+    }, [userProfile]);
 
     const activeFile = useMemo(() => files.find(f => f.id === activeFileId), [files, activeFileId]);
 
@@ -535,19 +543,6 @@ function AppContent() {
                                 </svg>
                             </button>
 
-                            {/* User Info */}
-                            {userProfile && (
-                                <div
-                                    className="px-3 py-2 rounded-lg text-sm font-medium"
-                                    style={{
-                                        backgroundColor: isHealthMode ? '#f0fdfa' : 'rgba(34, 197, 94, 0.1)',
-                                        color: isHealthMode ? '#047857' : '#86efac'
-                                    }}
-                                >
-                                    {userProfile.displayName}
-                                </div>
-                            )}
-
                             {/* Logout Button */}
                             <button
                                 onClick={logout}
@@ -718,7 +713,7 @@ function AppContent() {
                         {/* Company Info */}
                         <div>
                             <h4 className="font-bold mb-2" style={{ color: isHealthMode ? '#00695c' : '#10b981' }}>
-                                VerbaDoc Salud
+                                verbadoc salud
                             </h4>
                             <p className="text-sm" style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}>
                                 Extracción inteligente de datos médicos con IA procesada en Europa
@@ -786,7 +781,7 @@ function AppContent() {
                     <div className="border-t pt-4" style={{ borderTopColor: isHealthMode ? '#e5e7eb' : '#334155' }}>
                         <div className="flex flex-col md:flex-row justify-between items-center gap-2">
                             <p className="text-xs" style={{ color: isHealthMode ? '#64748b' : '#64748b' }}>
-                                © 2025 VerbaDoc Salud. Todos los derechos reservados. • Procesamiento 100% en Europa 🇪🇺
+                                © 2025 verbadoc salud. Todos los derechos reservados. • Procesamiento 100% en Europa 🇪🇺
                             </p>
                             <p className="text-xs" style={{ color: isHealthMode ? '#64748b' : '#64748b' }}>
                                 v1.0 • Powered by Google Gemini AI (Bélgica)
