@@ -5,6 +5,7 @@ import { SECTORS, getSectorById } from '../utils/sectorsConfig.ts';
 import { MEDICAL_SPECIALTIES, getSpecialtyById } from '../utils/specialtiesConfig.ts';
 import { SchemaBuilder } from './SchemaBuilder.tsx';
 import { generateSchemaFromPrompt, AVAILABLE_MODELS } from '../services/geminiService.ts';
+import { useAuth } from '../contexts/AuthContext.tsx';
 
 export interface Template {
     id: string;
@@ -560,6 +561,7 @@ const archivedHealthTemplates: any[] = [
 ];
 
 export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema, currentPrompt, onSectorChange, currentSector, theme, isHealthMode, selectedModel, onModelChange }: TemplatesPanelProps) {
+    const { userProfile } = useAuth();
     const [customTemplates, setCustomTemplates] = useState<any[]>([]);
     const [showSaveDialog, setShowSaveDialog] = useState(false);
     const [newTemplateName, setNewTemplateName] = useState('');
@@ -567,7 +569,8 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
     const [showArchived, setShowArchived] = useState(false);
     const [showArchivedCustom, setShowArchivedCustom] = useState(false);
     const selectedSector: Sector = 'salud'; // Hardcoded to health sector only - no state needed
-    const [selectedSpecialty, setSelectedSpecialty] = useState<MedicalSpecialty>('general');
+    // Establecer la especialidad del usuario como especialidad seleccionada por defecto
+    const [selectedSpecialty, setSelectedSpecialty] = useState<MedicalSpecialty>(userProfile?.specialty || 'general');
 
     // Estados para controlar desplegables
     const [showModelsSection, setShowModelsSection] = useState(true);
@@ -664,15 +667,34 @@ export function TemplatesPanel({ onSelectTemplate, onSaveTemplate, currentSchema
         }
     };
 
-    // Filter templates by selected specialty
-    const filteredTemplates = defaultTemplates.filter(t =>
-        (t.sector === 'salud' || !t.sector) &&
-        (t.specialty === selectedSpecialty || !t.specialty)
-    );
+    // Filter templates by selected specialty AND user permissions
+    const filteredTemplates = defaultTemplates.filter(t => {
+        // Filtro básico de sector
+        const matchesSector = t.sector === 'salud' || !t.sector;
+        // Filtro por especialidad seleccionada
+        const matchesSelectedSpecialty = t.specialty === selectedSpecialty || !t.specialty || t.specialty === 'general';
 
-    const filteredArchivedTemplates = archivedHealthTemplates.filter(t =>
-        t.specialty === selectedSpecialty || !t.specialty
-    );
+        // Control de acceso: el usuario solo puede ver plantillas de su especialidad o generales
+        let hasPermission = true;
+        if (userProfile && userProfile.specialty !== 'general') {
+            // Si el usuario no es general, solo puede ver su especialidad + general
+            hasPermission = !t.specialty || t.specialty === 'general' || t.specialty === userProfile.specialty;
+        }
+
+        return matchesSector && matchesSelectedSpecialty && hasPermission;
+    });
+
+    const filteredArchivedTemplates = archivedHealthTemplates.filter(t => {
+        const matchesSpecialty = t.specialty === selectedSpecialty || !t.specialty || t.specialty === 'general';
+
+        // Control de acceso para archivadas también
+        let hasPermission = true;
+        if (userProfile && userProfile.specialty !== 'general') {
+            hasPermission = !t.specialty || t.specialty === 'general' || t.specialty === userProfile.specialty;
+        }
+
+        return matchesSpecialty && hasPermission;
+    });
 
     const activeCustomTemplates = customTemplates.filter(t => showArchived || !t.archived);
     const archivedCustomTemplates = customTemplates.filter(t => t.archived);

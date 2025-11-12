@@ -19,8 +19,11 @@ import { ResultsViewer } from './components/ResultsViewer.tsx';
 import type { UploadedFile, ExtractionResult, SchemaField, Sector } from './types.ts';
 import { AVAILABLE_MODELS, type GeminiModel } from './services/geminiService.ts';
 import { getSectorById, getDefaultTheme } from './utils/sectorsConfig.ts';
+import { AuthProvider, useAuth } from './contexts/AuthContext.tsx';
+import { AuthModal } from './components/AuthModal.tsx';
 
-function App() {
+function AppContent() {
+    const { currentUser, userProfile, logout } = useAuth();
     const [files, setFiles] = useState<UploadedFile[]>([]);
     const [activeFileId, setActiveFileId] = useState<string | null>(null);
     const [history, setHistory] = useState<ExtractionResult[]>([]);
@@ -389,6 +392,11 @@ function App() {
     // Debug: Log theme values
     console.log('isDarkMode:', isDarkMode, 'isHealthMode:', isHealthMode, 'theme:', currentTheme);
 
+    // Mostrar modal de autenticación si no hay usuario
+    if (!currentUser) {
+        return <AuthModal isHealthMode={isHealthMode} />;
+    }
+
     return (
         <div
             className="min-h-screen font-sans transition-colors duration-500 flex flex-col"
@@ -526,16 +534,29 @@ function App() {
                                 </svg>
                             </button>
 
+                            {/* User Info */}
+                            {userProfile && (
+                                <div
+                                    className="px-3 py-2 rounded-lg text-sm font-medium"
+                                    style={{
+                                        backgroundColor: isHealthMode ? '#f0fdfa' : 'rgba(34, 197, 94, 0.1)',
+                                        color: isHealthMode ? '#047857' : '#86efac'
+                                    }}
+                                >
+                                    {userProfile.displayName}
+                                </div>
+                            )}
+
                             {/* Logout Button */}
                             <button
-                                onClick={() => window.location.reload()}
+                                onClick={logout}
                                 className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
                                 style={{
                                     backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
                                     borderColor: isHealthMode ? '#ef4444' : '#475569',
                                     color: isHealthMode ? '#dc2626' : '#f87171'
                                 }}
-                                title="Salir"
+                                title="Cerrar Sesión"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -774,6 +795,14 @@ function App() {
                 </div>
             </footer>
         </div>
+    );
+}
+
+function App() {
+    return (
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
     );
 }
 
