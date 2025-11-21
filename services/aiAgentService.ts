@@ -112,26 +112,43 @@ export async function classifyDocument(
 
   console.log(`🤖 Clasificando documento: ${file.name}`);
 
-  const classificationPrompt = `Analiza este documento e identifica su tipo exacto.
+  const classificationPrompt = `Analiza este documento médico e identifica su tipo exacto.
 
-TIPOS CONOCIDOS:
-- factura_comercial (facturas de venta)
-- factura_proveedor (facturas recibidas)
-- albaran_entrega (albaranes de mercancía)
-- contrato_laboral (contratos de trabajo)
-- contrato_arrendamiento (contratos de alquiler)
-- contrato_compraventa (contratos de venta)
-- dni_frontal (DNI/NIE cara frontal)
-- dni_completo (DNI ambas caras)
-- pasaporte
-- receta_medica (recetas médicas)
-- informe_medico (informes clínicos)
-- analisis_clinico (resultados de análisis)
-- nomina (nóminas laborales)
-- certificado_empresa
-- certificado_academico
-- escritura_publica (notariales)
-- otro (si no encaja en ninguna categoría)
+TIPOS DE DOCUMENTOS MÉDICOS CONOCIDOS:
+
+📋 GENERAL:
+- receta_medica (prescripciones médicas)
+- certificado_medico (certificados de baja, aptitud)
+- consulta_medica (notas de consulta)
+- vacunacion (registros de vacunas)
+- alta_medica (altas hospitalarias)
+
+🔬 ANÁLISIS Y DIAGNÓSTICO:
+- analisis_clinico (resultados de laboratorio: sangre, orina, etc.)
+- analisis_hematologia (hemograma completo)
+- analisis_bioquimica (glucosa, colesterol, etc.)
+- electrocardiograma (ECG)
+- ecocardiograma (ecografía cardíaca)
+- prueba_esfuerzo (test de esfuerzo cardíaco)
+
+🏥 ESPECIALIDADES:
+- informe_traumatologia (fracturas, lesiones)
+- radiografia (rayos X)
+- informe_oftalmologia (examen visual, cataratas)
+- receta_lentes (prescripción de gafas/lentillas)
+- historia_clinica_pediatrica (pediátrico)
+- informe_quirurgico (cirugías)
+- informe_radiologico (TAC, resonancias)
+- informe_anatomia_patologica (biopsias)
+
+📄 DOCUMENTACIÓN PACIENTE:
+- dni_paciente (identificación)
+- tarjeta_sanitaria (seguro médico)
+- consentimiento_informado (autorización tratamiento)
+- historial_clinico (historia completa del paciente)
+
+🔐 OTROS:
+- otro (si no encaja en ninguna categoría médica)
 
 INSTRUCCIONES:
 1. Examina el documento cuidadosamente
@@ -183,104 +200,160 @@ async function getTemplateForDocumentType(docType: string): Promise<{
   suggestedSchema?: SchemaField[];
 }> {
 
-  // Mapeo de tipos a plantillas
+  // Mapeo de tipos de documentos médicos a plantillas
   const TEMPLATES: Record<string, {
     templateId: string;
     prompt: string;
     schema: SchemaField[];
   }> = {
-    'factura_comercial': {
-      templateId: 'factura-comercial-v1',
-      prompt: 'Extrae todos los datos clave de esta factura comercial, incluyendo cliente, productos, importes e impuestos.',
-      schema: [
-        { id: '1', name: 'numero_factura', type: 'STRING' },
-        { id: '2', name: 'fecha_emision', type: 'STRING' },
-        { id: '3', name: 'fecha_vencimiento', type: 'STRING' },
-        { id: '4', name: 'cliente_nombre', type: 'STRING' },
-        { id: '5', name: 'cliente_cif', type: 'STRING' },
-        { id: '6', name: 'cliente_direccion', type: 'STRING' },
-        { id: '7', name: 'productos', type: 'ARRAY_OF_OBJECTS', children: [
-          { id: '7-1', name: 'descripcion', type: 'STRING' },
-          { id: '7-2', name: 'cantidad', type: 'NUMBER' },
-          { id: '7-3', name: 'precio_unitario', type: 'NUMBER' },
-          { id: '7-4', name: 'importe', type: 'NUMBER' }
-        ]},
-        { id: '8', name: 'base_imponible', type: 'NUMBER' },
-        { id: '9', name: 'iva_porcentaje', type: 'NUMBER' },
-        { id: '10', name: 'iva_importe', type: 'NUMBER' },
-        { id: '11', name: 'total', type: 'NUMBER' }
-      ]
-    },
-    'factura_proveedor': {
-      templateId: 'factura-proveedor-v1',
-      prompt: 'Extrae los datos de esta factura recibida de proveedor.',
-      schema: [
-        { id: '1', name: 'numero_factura', type: 'STRING' },
-        { id: '2', name: 'fecha', type: 'STRING' },
-        { id: '3', name: 'proveedor_nombre', type: 'STRING' },
-        { id: '4', name: 'proveedor_cif', type: 'STRING' },
-        { id: '5', name: 'concepto', type: 'STRING' },
-        { id: '6', name: 'base_imponible', type: 'NUMBER' },
-        { id: '7', name: 'iva', type: 'NUMBER' },
-        { id: '8', name: 'total', type: 'NUMBER' }
-      ]
-    },
-    'dni_frontal': {
-      templateId: 'dni-frontal-v1',
-      prompt: 'Extrae todos los datos visibles del DNI/NIE español.',
-      schema: [
-        { id: '1', name: 'nombre_completo', type: 'STRING' },
-        { id: '2', name: 'numero_dni', type: 'STRING' },
-        { id: '3', name: 'fecha_nacimiento', type: 'STRING' },
-        { id: '4', name: 'nacionalidad', type: 'STRING' },
-        { id: '5', name: 'sexo', type: 'STRING' },
-        { id: '6', name: 'fecha_expedicion', type: 'STRING' },
-        { id: '7', name: 'fecha_caducidad', type: 'STRING' }
-      ]
-    },
     'receta_medica': {
       templateId: 'receta-medica-v1',
-      prompt: 'Extrae los datos de esta receta médica.',
+      prompt: 'Extrae todos los datos de esta receta médica, incluyendo paciente, médico, medicamentos prescritos y diagnóstico.',
       schema: [
         { id: '1', name: 'paciente_nombre', type: 'STRING' },
-        { id: '2', name: 'medico_nombre', type: 'STRING' },
-        { id: '3', name: 'fecha', type: 'STRING' },
-        { id: '4', name: 'medicamentos', type: 'ARRAY_OF_OBJECTS', children: [
-          { id: '4-1', name: 'nombre', type: 'STRING' },
-          { id: '4-2', name: 'dosis', type: 'STRING' },
-          { id: '4-3', name: 'frecuencia', type: 'STRING' }
+        { id: '2', name: 'paciente_dni', type: 'STRING' },
+        { id: '3', name: 'paciente_num_seguridad_social', type: 'STRING' },
+        { id: '4', name: 'medico_nombre', type: 'STRING' },
+        { id: '5', name: 'medico_colegiado', type: 'STRING' },
+        { id: '6', name: 'fecha_emision', type: 'STRING' },
+        { id: '7', name: 'medicamentos', type: 'ARRAY_OF_OBJECTS', children: [
+          { id: '7-1', name: 'nombre_comercial', type: 'STRING' },
+          { id: '7-2', name: 'principio_activo', type: 'STRING' },
+          { id: '7-3', name: 'dosis', type: 'STRING' },
+          { id: '7-4', name: 'frecuencia', type: 'STRING' },
+          { id: '7-5', name: 'duracion_tratamiento', type: 'STRING' }
         ]},
-        { id: '5', name: 'diagnostico', type: 'STRING' }
+        { id: '8', name: 'diagnostico', type: 'STRING' },
+        { id: '9', name: 'codigo_cie10', type: 'STRING' }
       ]
     },
-    'nomina': {
-      templateId: 'nomina-v1',
-      prompt: 'Extrae los datos de esta nómina laboral.',
+    'certificado_medico': {
+      templateId: 'certificado-medico-v1',
+      prompt: 'Extrae los datos del certificado médico, incluyendo tipo de certificado, diagnóstico y periodo de baja.',
       schema: [
-        { id: '1', name: 'trabajador_nombre', type: 'STRING' },
-        { id: '2', name: 'trabajador_dni', type: 'STRING' },
-        { id: '3', name: 'empresa', type: 'STRING' },
-        { id: '4', name: 'periodo', type: 'STRING' },
-        { id: '5', name: 'salario_base', type: 'NUMBER' },
-        { id: '6', name: 'complementos', type: 'NUMBER' },
-        { id: '7', name: 'total_devengado', type: 'NUMBER' },
-        { id: '8', name: 'seguridad_social', type: 'NUMBER' },
-        { id: '9', name: 'irpf', type: 'NUMBER' },
-        { id: '10', name: 'liquido_a_percibir', type: 'NUMBER' }
+        { id: '1', name: 'tipo_certificado', type: 'STRING' },
+        { id: '2', name: 'paciente_nombre', type: 'STRING' },
+        { id: '3', name: 'paciente_dni', type: 'STRING' },
+        { id: '4', name: 'medico_nombre', type: 'STRING' },
+        { id: '5', name: 'medico_colegiado', type: 'STRING' },
+        { id: '6', name: 'fecha_emision', type: 'STRING' },
+        { id: '7', name: 'diagnostico', type: 'STRING' },
+        { id: '8', name: 'codigo_cie10', type: 'STRING' },
+        { id: '9', name: 'fecha_inicio_baja', type: 'STRING' },
+        { id: '10', name: 'fecha_fin_baja', type: 'STRING' },
+        { id: '11', name: 'observaciones', type: 'STRING' }
       ]
     },
-    'albaran_entrega': {
-      templateId: 'albaran-v1',
-      prompt: 'Extrae los datos de este albarán de entrega.',
+    'analisis_clinico': {
+      templateId: 'analisis-clinico-v1',
+      prompt: 'Extrae los resultados del análisis clínico con todos los parámetros medidos, valores y rangos de referencia.',
       schema: [
-        { id: '1', name: 'numero_albaran', type: 'STRING' },
-        { id: '2', name: 'fecha', type: 'STRING' },
-        { id: '3', name: 'proveedor', type: 'STRING' },
-        { id: '4', name: 'cliente', type: 'STRING' },
-        { id: '5', name: 'articulos', type: 'ARRAY_OF_OBJECTS', children: [
-          { id: '5-1', name: 'descripcion', type: 'STRING' },
-          { id: '5-2', name: 'cantidad', type: 'NUMBER' }
-        ]}
+        { id: '1', name: 'paciente_nombre', type: 'STRING' },
+        { id: '2', name: 'paciente_dni', type: 'STRING' },
+        { id: '3', name: 'fecha_extraccion', type: 'STRING' },
+        { id: '4', name: 'fecha_informe', type: 'STRING' },
+        { id: '5', name: 'laboratorio', type: 'STRING' },
+        { id: '6', name: 'medico_solicitante', type: 'STRING' },
+        { id: '7', name: 'tipo_analisis', type: 'STRING' },
+        { id: '8', name: 'resultados', type: 'ARRAY_OF_OBJECTS', children: [
+          { id: '8-1', name: 'parametro', type: 'STRING' },
+          { id: '8-2', name: 'valor', type: 'STRING' },
+          { id: '8-3', name: 'unidad', type: 'STRING' },
+          { id: '8-4', name: 'rango_referencia', type: 'STRING' },
+          { id: '8-5', name: 'estado', type: 'STRING' }
+        ]},
+        { id: '9', name: 'observaciones', type: 'STRING' }
+      ]
+    },
+    'electrocardiograma': {
+      templateId: 'electrocardiograma-v1',
+      prompt: 'Extrae los datos del electrocardiograma (ECG), incluyendo frecuencia cardíaca, ritmo y conclusiones.',
+      schema: [
+        { id: '1', name: 'paciente_nombre', type: 'STRING' },
+        { id: '2', name: 'paciente_dni', type: 'STRING' },
+        { id: '3', name: 'fecha_prueba', type: 'STRING' },
+        { id: '4', name: 'cardiologo_nombre', type: 'STRING' },
+        { id: '5', name: 'frecuencia_cardiaca', type: 'NUMBER' },
+        { id: '6', name: 'ritmo', type: 'STRING' },
+        { id: '7', name: 'eje_qrs', type: 'STRING' },
+        { id: '8', name: 'intervalo_pr', type: 'STRING' },
+        { id: '9', name: 'intervalo_qrs', type: 'STRING' },
+        { id: '10', name: 'intervalo_qt', type: 'STRING' },
+        { id: '11', name: 'hallazgos', type: 'STRING' },
+        { id: '12', name: 'conclusion', type: 'STRING' }
+      ]
+    },
+    'informe_radiologico': {
+      templateId: 'informe-radiologico-v1',
+      prompt: 'Extrae los datos del informe radiológico (TAC, resonancia, radiografía) incluyendo técnica, hallazgos y conclusiones.',
+      schema: [
+        { id: '1', name: 'paciente_nombre', type: 'STRING' },
+        { id: '2', name: 'paciente_dni', type: 'STRING' },
+        { id: '3', name: 'fecha_estudio', type: 'STRING' },
+        { id: '4', name: 'tipo_estudio', type: 'STRING' },
+        { id: '5', name: 'region_anatomica', type: 'STRING' },
+        { id: '6', name: 'tecnica', type: 'STRING' },
+        { id: '7', name: 'contraste', type: 'STRING' },
+        { id: '8', name: 'hallazgos', type: 'STRING' },
+        { id: '9', name: 'conclusion', type: 'STRING' },
+        { id: '10', name: 'radiologo_nombre', type: 'STRING' },
+        { id: '11', name: 'medico_solicitante', type: 'STRING' }
+      ]
+    },
+    'informe_quirurgico': {
+      templateId: 'informe-quirurgico-v1',
+      prompt: 'Extrae los datos del informe quirúrgico, incluyendo diagnóstico, procedimiento realizado y evolución postoperatoria.',
+      schema: [
+        { id: '1', name: 'paciente_nombre', type: 'STRING' },
+        { id: '2', name: 'paciente_dni', type: 'STRING' },
+        { id: '3', name: 'fecha_intervencion', type: 'STRING' },
+        { id: '4', name: 'cirujano_principal', type: 'STRING' },
+        { id: '5', name: 'anestesiologo', type: 'STRING' },
+        { id: '6', name: 'diagnostico_preoperatorio', type: 'STRING' },
+        { id: '7', name: 'procedimiento_realizado', type: 'STRING' },
+        { id: '8', name: 'hallazgos_intraoperatorios', type: 'STRING' },
+        { id: '9', name: 'tecnica_quirurgica', type: 'STRING' },
+        { id: '10', name: 'complicaciones', type: 'STRING' },
+        { id: '11', name: 'diagnostico_postoperatorio', type: 'STRING' },
+        { id: '12', name: 'pronostico', type: 'STRING' }
+      ]
+    },
+    'alta_medica': {
+      templateId: 'alta-medica-v1',
+      prompt: 'Extrae los datos del alta médica hospitalaria, incluyendo motivo de ingreso, tratamiento y recomendaciones.',
+      schema: [
+        { id: '1', name: 'paciente_nombre', type: 'STRING' },
+        { id: '2', name: 'paciente_dni', type: 'STRING' },
+        { id: '3', name: 'fecha_ingreso', type: 'STRING' },
+        { id: '4', name: 'fecha_alta', type: 'STRING' },
+        { id: '5', name: 'servicio', type: 'STRING' },
+        { id: '6', name: 'medico_responsable', type: 'STRING' },
+        { id: '7', name: 'motivo_ingreso', type: 'STRING' },
+        { id: '8', name: 'diagnostico_principal', type: 'STRING' },
+        { id: '9', name: 'diagnosticos_secundarios', type: 'STRING' },
+        { id: '10', name: 'procedimientos_realizados', type: 'STRING' },
+        { id: '11', name: 'tratamiento_hospitalario', type: 'STRING' },
+        { id: '12', name: 'tratamiento_domiciliario', type: 'STRING' },
+        { id: '13', name: 'recomendaciones', type: 'STRING' },
+        { id: '14', name: 'proxima_revision', type: 'STRING' }
+      ]
+    },
+    'vacunacion': {
+      templateId: 'vacunacion-v1',
+      prompt: 'Extrae los datos del registro de vacunación, incluyendo vacuna administrada, dosis y lote.',
+      schema: [
+        { id: '1', name: 'paciente_nombre', type: 'STRING' },
+        { id: '2', name: 'paciente_dni', type: 'STRING' },
+        { id: '3', name: 'fecha_nacimiento', type: 'STRING' },
+        { id: '4', name: 'fecha_vacunacion', type: 'STRING' },
+        { id: '5', name: 'vacuna_nombre', type: 'STRING' },
+        { id: '6', name: 'laboratorio', type: 'STRING' },
+        { id: '7', name: 'lote', type: 'STRING' },
+        { id: '8', name: 'dosis_numero', type: 'STRING' },
+        { id: '9', name: 'via_administracion', type: 'STRING' },
+        { id: '10', name: 'lugar_administracion', type: 'STRING' },
+        { id: '11', name: 'profesional_sanitario', type: 'STRING' },
+        { id: '12', name: 'proxima_dosis', type: 'STRING' }
       ]
     }
   };

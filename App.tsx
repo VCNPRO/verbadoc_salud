@@ -721,6 +721,7 @@ function AppContent() {
                                 }}
                                 extractedData={activeFile?.extractedData}
                                 currentSchema={schema}
+                                isHealthMode={isHealthMode}
                             />
                         </div>
                     </div>

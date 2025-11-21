@@ -1,4 +1,4 @@
-// AI Assistant Panel - Panel principal del Asistente IA
+// AI Assistant Panel - Panel principal del Asistente IA para Sector Salud
 import React, { useState } from 'react';
 import { classifyDocument, validateExtractedData } from '../services/aiAgentService.ts';
 import { segmentPDFWithGemini, isPDFFile, getPDFInfo } from '../services/segmentationService.ts';
@@ -11,6 +11,7 @@ interface AIAssistantPanelProps {
   onValidationComplete: (validation: any) => void;
   extractedData?: object;
   currentSchema?: SchemaField[];
+  isHealthMode?: boolean;
 }
 
 export function AIAssistantPanel({
@@ -18,7 +19,8 @@ export function AIAssistantPanel({
   onSchemaGenerated,
   onValidationComplete,
   extractedData,
-  currentSchema
+  currentSchema,
+  isHealthMode = true
 }: AIAssistantPanelProps) {
 
   const [isClassifying, setIsClassifying] = useState(false);
@@ -116,28 +118,41 @@ export function AIAssistantPanel({
 
   if (!file) {
     return (
-      <div className="border rounded-lg p-6 text-center" style={{ backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}>
+      <div className="border-2 rounded-lg p-6 text-center" style={{
+        backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+        borderColor: isHealthMode ? '#80cbc4' : '#475569',
+        color: isHealthMode ? '#00695c' : '#f1f5f9'
+      }}>
         <div className="flex justify-center mb-4">
-          <BrainIcon className="w-16 h-16" style={{ color: 'hsl(var(--primary))' }} />
+          <BrainIcon className="w-16 h-16" style={{ color: isHealthMode ? '#00897b' : '#06b6d4' }} />
         </div>
-        <h3 className="text-lg font-semibold mb-2">Asistente IA</h3>
-        <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-          Sube un documento para activar las funciones inteligentes
+        <h3 className="text-lg font-semibold mb-2">Asistente IA Médico 🏥</h3>
+        <p className="text-sm" style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}>
+          Sube un documento médico para activar el análisis inteligente
         </p>
       </div>
     );
   }
 
   return (
-    <div className="border rounded-lg" style={{ backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}>
+    <div className="border-2 rounded-lg" style={{
+      backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+      borderColor: isHealthMode ? '#80cbc4' : '#475569',
+      color: isHealthMode ? '#0f172a' : '#f1f5f9'
+    }}>
       {/* Header */}
-      <div className="border-b p-4" style={{ backgroundColor: 'hsl(var(--primary) / 0.05)' }}>
+      <div className="border-b-2 p-4" style={{
+        backgroundColor: isHealthMode ? '#e0f2f1' : 'rgba(15, 23, 42, 0.5)',
+        borderBottomColor: isHealthMode ? '#00897b' : '#475569'
+      }}>
         <div className="flex items-center gap-3">
-          <BrainIcon className="w-8 h-8" style={{ color: 'hsl(var(--primary))' }} />
+          <BrainIcon className="w-8 h-8" style={{ color: isHealthMode ? '#00897b' : '#06b6d4' }} />
           <div>
-            <h3 className="font-semibold text-lg">Asistente IA</h3>
-            <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Análisis inteligente de documentos
+            <h3 className="font-semibold text-lg" style={{ color: isHealthMode ? '#004d40' : '#f1f5f9' }}>
+              Asistente IA Médico 🏥
+            </h3>
+            <p className="text-xs" style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}>
+              Análisis inteligente de documentos de salud
             </p>
           </div>
         </div>
@@ -145,11 +160,16 @@ export function AIAssistantPanel({
 
       {/* PDF Info */}
       {pdfInfo && (
-        <div className="p-4 border-b" style={{ backgroundColor: 'hsl(var(--muted) / 0.5)' }}>
+        <div className="p-4 border-b-2" style={{
+          backgroundColor: isHealthMode ? '#b2dfdb' : 'rgba(15, 23, 42, 0.3)',
+          borderBottomColor: isHealthMode ? '#80cbc4' : '#475569'
+        }}>
           <div className="flex items-center gap-2 text-sm">
             <span>📄</span>
-            <span className="font-medium">PDF detectado:</span>
-            <span style={{ color: 'hsl(var(--muted-foreground))' }}>
+            <span className="font-medium" style={{ color: isHealthMode ? '#004d40' : '#f1f5f9' }}>
+              PDF médico detectado:
+            </span>
+            <span style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}>
               {pdfInfo.numPages} páginas • {(pdfInfo.fileSize / 1024).toFixed(1)} KB
             </span>
           </div>
@@ -160,12 +180,17 @@ export function AIAssistantPanel({
       <div className="p-4 space-y-3">
 
         {/* Clasificación Automática */}
-        <div className="border rounded-lg p-4">
+        <div className="border-2 rounded-lg p-4" style={{
+          borderColor: isHealthMode ? '#80cbc4' : '#475569',
+          backgroundColor: isHealthMode ? '#f1f9f8' : 'rgba(15, 23, 42, 0.2)'
+        }}>
           <div className="flex items-start justify-between mb-3">
             <div>
-              <h4 className="font-semibold text-sm mb-1">🏷️ Clasificación Automática</h4>
-              <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Detecta el tipo de documento y sugiere el esquema de extracción
+              <h4 className="font-semibold text-sm mb-1" style={{ color: isHealthMode ? '#004d40' : '#f1f5f9' }}>
+                🏷️ Clasificación Automática de Documentos Médicos
+              </h4>
+              <p className="text-xs" style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}>
+                Detecta el tipo de documento médico y sugiere el esquema de extracción
               </p>
             </div>
           </div>
@@ -174,15 +199,19 @@ export function AIAssistantPanel({
             <button
               onClick={handleAutoClassify}
               disabled={isClassifying}
-              className="btn-primary w-full text-sm"
+              className="w-full text-sm px-4 py-2 rounded-lg font-medium transition-all hover:opacity-90 disabled:opacity-50"
+              style={{
+                backgroundColor: isHealthMode ? '#00897b' : '#06b6d4',
+                color: '#ffffff'
+              }}
             >
               {isClassifying ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="animate-spin">⏳</span>
-                  Analizando...
+                  Analizando documento médico...
                 </span>
               ) : (
-                '🔍 Clasificar Documento'
+                '🔍 Clasificar Documento Médico'
               )}
             </button>
           ) : (
@@ -385,9 +414,12 @@ export function AIAssistantPanel({
       </div>
 
       {/* Footer con información */}
-      <div className="border-t p-3" style={{ backgroundColor: 'hsl(var(--muted) / 0.3)' }}>
-        <p className="text-xs text-center" style={{ color: 'hsl(var(--muted-foreground))' }}>
-          💡 El Asistente IA aprende de tus correcciones para mejorar con el tiempo
+      <div className="border-t-2 p-3" style={{
+        backgroundColor: isHealthMode ? '#e0f2f1' : 'rgba(15, 23, 42, 0.3)',
+        borderTopColor: isHealthMode ? '#80cbc4' : '#475569'
+      }}>
+        <p className="text-xs text-center" style={{ color: isHealthMode ? '#475569' : '#94a3b8' }}>
+          🏥 El Asistente IA Médico aprende de tus correcciones y cumple con HIPAA
         </p>
       </div>
     </div>
