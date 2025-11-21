@@ -16,7 +16,11 @@ import { SettingsModal } from './components/SettingsModal.tsx';
 // Fix: Use explicit file extension in import.
 import { ResultsViewer } from './components/ResultsViewer.tsx';
 // Fix: Use explicit file extension in import.
-import type { UploadedFile, ExtractionResult, SchemaField, Sector } from './types.ts';
+import { ChatbotLaia } from './components/ChatbotLaia.tsx';
+// Fix: Use explicit file extension in import.
+import { AIAssistantPanel } from './components/AIAssistantPanel.tsx';
+// Fix: Use explicit file extension in import.
+import type { UploadedFile, ExtractionResult, SchemaField, SchemaFieldType, Sector } from './types.ts';
 import { AVAILABLE_MODELS, type GeminiModel } from './services/geminiService.ts';
 import { getSectorById, getDefaultTheme } from './utils/sectorsConfig.ts';
 // MODO MOCK TEMPORAL - Cambiar a './src/contexts/AuthContext.tsx' cuando Firebase esté configurado
@@ -36,6 +40,7 @@ function AppContent() {
     const currentSector: Sector = 'salud'; // Hardcoded to health sector only
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
     const [showResultsExpanded, setShowResultsExpanded] = useState<boolean>(false);
+    const [isAIAssistantOpen, setIsAIAssistantOpen] = useState<boolean>(false);
     const [selectedModel, setSelectedModel] = useState<GeminiModel>('gemini-2.5-flash');
     const [clientName, setClientName] = useState<string>(() => {
         // Usar el nombre del usuario autenticado como nombre del cliente
@@ -201,7 +206,7 @@ function AppContent() {
         }
 
         setIsLoading(false);
-        setShowingResults(true); // Mostrar resultados automáticamente
+        setShowResultsExpanded(true); // Mostrar resultados automáticamente
     };
 
     
@@ -510,6 +515,22 @@ function AppContent() {
                                 ))}
                             </select>
 
+                            {/* AI Assistant Button */}
+                            <button
+                                onClick={() => setIsAIAssistantOpen(true)}
+                                className="flex items-center gap-2 px-3 py-2 border-2 rounded-lg transition-all duration-500 hover:shadow-lg hover:scale-105"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#ffffff' : '#1e293b',
+                                    borderColor: isHealthMode ? '#00897b' : '#475569',
+                                    color: isHealthMode ? '#00695c' : '#60a5fa'
+                                }}
+                                title="Asistente de IA"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                            </button>
+
                             {/* Help Button */}
                             <button
                                 onClick={() => setIsHelpModalOpen(true)}
@@ -642,6 +663,69 @@ function AppContent() {
                 onClose={() => setIsSettingsModalOpen(false)}
                 isHealthMode={isHealthMode}
             />
+
+            {/* Chatbot Laia */}
+            <ChatbotLaia isHealthMode={isHealthMode} />
+
+            {/* AI Assistant Panel */}
+            {isAIAssistantOpen && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+                    onClick={() => setIsAIAssistantOpen(false)}
+                >
+                    <div
+                        className="w-full max-w-4xl max-h-[90vh] rounded-lg shadow-2xl overflow-hidden"
+                        style={{
+                            backgroundColor: isHealthMode ? '#ffffff' : '#1e293b'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header del modal */}
+                        <div
+                            className="flex items-center justify-between p-4 border-b-2"
+                            style={{
+                                backgroundColor: isHealthMode ? '#b2dfdb' : 'rgba(15, 23, 42, 0.5)',
+                                borderBottomColor: isHealthMode ? '#00897b' : '#475569'
+                            }}
+                        >
+                            <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: isHealthMode ? '#004d40' : '#f1f5f9' }}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: isHealthMode ? '#00897b' : '#06b6d4' }}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                                Asistente de IA
+                            </h2>
+                            <button
+                                onClick={() => setIsAIAssistantOpen(false)}
+                                className="p-2 rounded-lg transition-all hover:opacity-80"
+                                style={{
+                                    backgroundColor: isHealthMode ? '#fee2e2' : 'rgba(239, 68, 68, 0.2)',
+                                    color: isHealthMode ? '#dc2626' : '#f87171'
+                                }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Contenido del modal */}
+                        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                            <AIAssistantPanel
+                                file={activeFile?.file || null}
+                                onSchemaGenerated={(newSchema, newPrompt) => {
+                                    setSchema(newSchema);
+                                    setPrompt(newPrompt);
+                                }}
+                                onValidationComplete={(validationResult) => {
+                                    console.log('Validación completada:', validationResult);
+                                }}
+                                extractedData={activeFile?.extractedData}
+                                currentSchema={schema}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal expandido de resultados */}
             {showResultsExpanded && history.length > 0 && (
