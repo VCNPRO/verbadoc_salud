@@ -406,9 +406,9 @@ function AppContent() {
     console.log('isDarkMode:', isDarkMode, 'isHealthMode:', isHealthMode, 'theme:', currentTheme);
 
     // Mostrar modal de autenticación si no hay usuario
-    if (!currentUser) {
-        return <AuthModal isHealthMode={isHealthMode} />;
-    }
+//     if (!currentUser) {
+//         return <AuthModal isHealthMode={isHealthMode} />;
+//     }
 
     return (
         <div
